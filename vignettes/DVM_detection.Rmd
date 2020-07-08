@@ -1,0 +1,183 @@
+---
+title: "DVM detection"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"DVM detection"}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+This is just a brief view of the DVM for the different missions. THis document illustrates how we can tune the detection and visualize the DVM on the echograms.
+
+```{r echo=FALSE,message=FALSE}
+library(ZooDVM)
+
+path = 'C:\\Users\\sven\\Documents\\Zonar\\data\\csv_zonar\\'
+mm = get_mission(path)
+```
+
+```{r echo = FALSE, results = "asis", message=FALSE}
+i=1
+out = get_sv(path,i)
+cat("## ",mm$missions[i])
+v = names(out$data)[1]
+dvm = pdvm(ac_group=out$data[v][[1]],
+         vmin=-85,
+         vmax=-55,
+         perc=82,
+         dcut=230,scut=10, dskip=4,dend=16)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum1000_1 = dvmsum(dvm)
+
+v = names(out$data)[2]
+dvm200 = pdvm(ac_group=out$data[v][[1]],
+         vmin=-85,
+         vmax=-55,
+         perc=82,
+         dcut=230,scut=10, dskip=4,dend=16)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm200, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum200_1 = dvmsum(dvm200)
+
+out$plots[names(out$data)[3]][[1]]
+cat("  \n")
+
+```
+```{r echo = FALSE, results = "asis", message=FALSE}
+i=2
+out = get_sv(path,i)
+cat("## ",mm$missions[i])
+v = names(out$data)[1]
+dvm = pdvm(ac_group=out$data[v][[1]],
+         vmin=-85,
+         vmax=-55,
+         perc=78,
+         dcut=250,scut=10, dskip=3,dend=3)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum1000_1 = dvmsum(dvm)
+
+v = names(out$data)[2]
+dvm200 = pdvm(ac_group=out$data[v][[1]],
+         vmin=-95,
+         vmax=-70,
+         perc=80,
+         dcut=250,scut=10, dskip=3,dend=3)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm200, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum200_1 = dvmsum(dvm200)
+
+out$plots[names(out$data)[3]][[1]]
+cat("  \n")
+```
+```{r echo = FALSE, results = "asis", message=FALSE}
+i=3
+out = get_sv(path,i)
+cat("## ",mm$missions[i])
+v = names(out$data)[1]
+dvm = pdvm(ac_group=out$data[v][[1]],
+         vmin=-80,
+         vmax=-67,
+         perc=60,
+         dcut=350,scut=5, dskip=6,dend=3)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum1000_1 = dvmsum(dvm)
+```
+
+```{r}
+v = names(out$data)[2]
+dvm200 = pdvm(ac_group=out$data[v][[1]],
+         vmin=-85,
+         vmax=-70,
+         perc=62,
+         dcut=350,scut=10, dskip=6,dend=5)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm200, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum200_1 = dvmsum(dvm200)
+
+out$plots[names(out$data)[3]][[1]]
+cat("  \n")
+```
+```{r echo = FALSE, results = "asis", message=FALSE}
+i=4
+out = get_sv(path,i)
+cat("## ",mm$missions[i])
+v = names(out$data)[1]
+dvm = pdvm(ac_group=out$data[v][[1]],
+         vmin=-82,
+         vmax=-60,
+         perc=65,
+         dcut=350,scut=5, dskip=5,dend=3)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum1000_1 = dvmsum(dvm)
+
+out$plots[names(out$data)[3]][[1]]
+```
+```{r echo = FALSE, results = "asis", message=FALSE}
+i=5
+out = get_sv(path,i)
+cat("## ",mm$missions[i])
+v = names(out$data)[1]
+dvm = pdvm(ac_group=out$data[v][[1]],
+         vmin=-82,
+         vmax=-65,
+         perc=75,
+         dcut=300,scut=5, dskip=5,dend=20)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum1000_1 = dvmsum(dvm)
+
+out$plots[names(out$data)[3]][[1]]
+out$plots[names(out$data)[2]][[1]]
+```
+```{r echo = FALSE, results = "asis", message=FALSE}
+i=6
+out = get_sv(path,i)
+cat("## ",mm$missions[i])
+v = names(out$data)[1]
+dvm = pdvm(ac_group=out$data[v][[1]],
+         vmin=-80,
+         vmax=-57,
+         perc=80,
+         dcut=300,scut=5, dskip=5,dend=3)
+
+p=out$plots[v][[1]]
+p=p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+print(p)
+dvmsum1000_1 = dvmsum(dvm)
+
+out$plots[names(out$data)[3]][[1]]
+out$plots[names(out$data)[2]][[1]]
+```
+```{r}
+  # ggplot(data=dvmsum, aes(x=sun,y=Depth))+
+  #   geom_point()+scale_y_reverse()+
+  #   geom_line(group=1)+
+  #   geom_line(data=dvmsum, aes(x=sun, y=dpsd,group=1),lty=2)+
+  #   geom_line(data=dvmsum, aes(x=sun, y=dmsd,group=1),lty=2)+
+  #   xlab('')+
+  #   ylab('Depth[m]')+
+  #   theme_classic()+
+  #   theme(text=element_text(size=16))
+  # 
+```

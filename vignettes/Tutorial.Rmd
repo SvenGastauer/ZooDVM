@@ -1,0 +1,86 @@
+---
+title: "Using Zooglider Zonar data in R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"Using Zooglider Zonar data in R"}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Introduction
+
+This should be used as a rough guide on how Zooglider and Zonar data can be used with R. This should give an overview of the basic functionalities of the generated netCDF files and the Zonar Sv  csv files.  
+This should be seen as an introductionary tutorial. All data should be available on the UCSD shared Zooglider data drive (//zgdata.ucsd.edu/data).  
+The dedicated R packageZooDVM is available on Github (add link) and and on the zgdata drive (add link).  
+
+## Getting started
+
+### Installing packages
+
+For this tutorial we need the *ZooDVM* and *ZooScatR* package, both are available from Github, from the UCSD zgdata shared drive.  
+Installing packages from GitHub requires the *devtools* pakcage to be installed. We can use the below code to check if devtools is installed and install it if it isn't:
+
+```{r}
+if('devtools' %in% installed.packages()){
+  message(Sys.time(), ': devtools is already available, no further action required. The install version is ',packageVersion('devtools'))
+}else{
+  install.packages('devtools')
+}
+library(devtools)
+```
+
+Now we can proceed with installing *ZooDVM* and *ZooScatR* if needed:
+
+```{r}
+if('devtools' %in% installed.packages()){
+  message(Sys.time(), ': devtools is already available, no further action required. The install version is ',packageVersion('devtools'))
+}else{
+  install.packages('devtools')
+}
+library(devtools)
+```
+
+# How to get from raw acoustic data to Sv data  
+
+First we will have to define the directory where we can find all the needed data and have a look at the available missions:
+
+```{r}
+library(ZooDVM)
+path = 'C:\\Users\\sven\\Documents\\Zonar\\data\\csv_zonar\\'
+mm = get_mission(path)
+```
+
+# Reading Sv data for one mission
+```{r}
+
+```
+
+## Plotting Sv data with Day/Night info  
+
+## Detecting DVM
+
+# Using netCDF files for additional information  
+
+## Getting GPS info from netCDF file
+
+## Getting environment info from netCDF file
+
+## GAM for DVM vs environment
+
+# Getting Zoocam grayscale info  
+
+# Simulating targets with ZooScat
+
+## g & h values  
+
+## Simulations  
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
