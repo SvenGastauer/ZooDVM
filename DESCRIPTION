@@ -12,7 +12,9 @@ Depends:
 	suncalc,
 	dplyr,
 	tidyr,
-	ncdf4
+	ncdf4,
+	marmap,
+	data.table
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1

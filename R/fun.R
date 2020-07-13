@@ -20,12 +20,17 @@ prepare_data <- function(data, gps){
 #' @param patterns patterns considered, defaults to c('200kHz', '1000kHz','Delta')
 #' @export
 #' @return list contiang the paths to the files for each pattern and a list of detected missions
-get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta')){
-  p = lapply(as.list(patterns),
-             FUN=function(x) list.files(path=path, pattern=glob2rx(paste0('*',x,'*.csv'))))
-  names(p) = patterns
-  p[['missions']] = unique(unlist(lapply(p, FUN = function(x) unlist(strsplit(x,'_sv_'))[seq(1,2 * length(x),2)])))
-  message(Sys.time(), ': a total of ', length(p[['missions']]), ' missions were found.')
+get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta'), ending='*.csv'){
+  if (length(patterns)>0){
+    p = lapply(as.list(patterns),
+               FUN=function(x) list.files(path=path, pattern=glob2rx(paste0('*',x,ending))))
+    names(p) = patterns
+    p[['missions']] = unique(unlist(lapply(p, FUN = function(x) unlist(strsplit(x,'_sv_'))[seq(1,2 * length(x),2)])))
+    message(Sys.time(), ': a total of ', length(p[['missions']]), ' missions were found.')
+  }else{
+    p = list.files(path=path, pattern=ending)
+    message(Sys.time(), ': a total of ', length(p), ' missions were found.')
+  }
   return(p)
 }
 
@@ -34,13 +39,20 @@ get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta')){
 #' @param gps dataframe containing lat, lon, and time information
 #' @param col color scheme for the day/night bar defaults to "Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"
 #' @param cmaps colour maps for Sv data and Sv delta if needed, defaults to c("RdYlBu",'RdBu')
+#' @param svmin minimum value for Sv color, defaults to -85
+#' @param svmax maximum value for Sv color, defaults to -45
+#' @param deltamin minimum value for delta Sv, defaults to -10
+#' @param deltamax maximum value for delta Sv, defaults to +10
 #' @export
 #' @import ggplot2
 #' @author Sven Gastauer
 #' @return list of plots
-plot_sv <- function(d1, gps,cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"),cmaps=c("RdYlBu",'RdBu')){
-  if(unique(d1$variable) %in% c('1000kHz','200kHz')){lims=c(-85,-45); cmap = cmaps[1]}
-  else{lims=c(-10,10); cmap=cmaps[2]}
+plot_sv <- function(d1, gps=NULL,
+                    cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"),
+                    cmaps=c("RdYlBu",'RdBu'),
+                    svmin=-85,svmax=-45,deltamin=-10,deltamax=10){
+  if(unique(d1$variable) %in% c('1000kHz','200kHz')){lims=c(svmin,svmax); cmap = cmaps[1]}
+  else{lims=c(deltamin,deltamax); cmap=cmaps[2]}
   p<-ggplot()+
     geom_tile(data=d1,aes(x=Dive, y=Depth_r,fill=Sv))+
     scale_y_reverse()+
@@ -49,11 +61,13 @@ plot_sv <- function(d1, gps,cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day
                          name=paste('Sv',unique(d1$variable)), oob=scales::squish)+
     scale_x_continuous(expand=c(0.01,0.01))+
     xlab('Dive #') + ylab('Depth [m]')+
-    geom_segment(data=gps,aes(x=Dive,xend=Dive+1, y=-3, yend=-3, colour=sun),show.legend = FALSE, size=3,alpha=0.5)+
-    scale_colour_manual(values = cols, name='')+
     theme_classic()+
     theme(text=element_text(size=16),
           legend.position = 'top')
+if (!is.null(gps)){
+  p <- p + geom_segment(data=gps,aes(x=Dive,xend=Dive+1, y=-3, yend=-3, colour=sun),show.legend = FALSE, size=3,alpha=0.5)+
+    scale_colour_manual(values = cols, name='')
+}
   return(p)
 }
 
@@ -91,7 +105,7 @@ get_sv <- function(path, mission, ncpath=NULL){
 
   p <- lapply(dlist,FUN =function(x) plot_sv(x,gps))
 
-  return(list('data'=dlist,'plots'=p))
+  return(list('data'=dlist,'plots'=p,'gps'=gps))
 
 }
 
@@ -209,4 +223,120 @@ dvmsum <- function(dvm){
 
   return(dvmsum)
 }
+
+
+#' Gets GPS and daytime for a given misson per dive
+#' @param ncpath path to the ZOnar netCDF files
+#' @param mission string or integer which is the name of the mission to be loaded
+#' @return dataframe containing per dive mean, start and end lon, lat, and time for each dive
+#' @import ncdf4
+#' @export
+#' @author Sven Gastauer
+#'
+get_gps <- function(ncpath, mission){
+  if (is.numeric(mission)){
+    mission = get_mission(ncpath, ending='*.nc', patterns=NULL)[mission]
+
+  }
+  message(Sys.time(),': Selected mission - ',mission)
+
+  nc_data <- ncdf4::nc_open(paste0(ncpath, '/',mission))
+
+  message(Sys.time(),': Getting GPS')
+  t_end <- ncvar_get(nc_data, "gps/UTC_time_fix_end")
+  ori = strsplit(ncatt_get(nc_data, "gps/UTC_time_fix_end")$units,'seconds since ')[[1]][2]
+  t_end = as.POSIXct(t_end,origin=ori)
+  attr(t_end,'tzone') = 'UTC'
+
+  t_start <- ncvar_get(nc_data, "gps/UTC_time_fix_start")
+  ori = strsplit(ncatt_get(nc_data, "gps/UTC_time_fix_start")$units,'seconds since ')[[1]][2]
+  t_start = as.POSIXct(t_start,origin=ori)
+  attr(t_start,'tzone') = 'UTC'
+
+  lon_start <- ncvar_get(nc_data, "gps/lon_start")
+  lon_end <- ncvar_get(nc_data, "gps/lon_end")
+  lat_start <- ncvar_get(nc_data, "gps/lat_start")
+  lat_end <- ncvar_get(nc_data, "gps/lat_end")
+  Dive <- seq(1,length(lon_start))
+  var = rep(c('start', 'stop'), each=length(lon_end))
+
+  gps =data.frame(Dive = c(Dive,Dive),
+                  var = var,
+                  Time = c(t_start,  t_end),
+                  Lon = c(lon_start,lon_end),
+                  Lat = c(lat_start, lat_end))
+
+
+  message(Sys.time(),': Getting sun position/azimuth and Day/Night info')
+  sr <- do.call(rbind,apply(as.matrix(1:length(gps$Time)), 1, function(x)
+    getSunlightPosition(gps$Time[x], gps$Lat[x], gps$Lon[x])))
+  gps$alt <- sr$altitude * 180 / pi
+  gps$azimuth <- sr$azimuth * 180 / pi
+  gps$sun <- cut(gps$alt,
+                 breaks=c(-Inf, -12, 0, Inf),
+                 labels=c("Night","Dusk/Dawn","Day"))
+
+
+  gps$mission = mission
+  gps = gps[order(gps$Dive),]
+
+  return(gps)
+}
+
+#' Plot mission map with bathymetry
+#' @param gps dataframe contianing grps information, generated by get_gps
+#' @param bathy TRUE/FALSE to add bathymetry from marmap package or not, defaults to TRUE
+#' @param daynight TRUE/FALSE color code points by day, night or dusk/dawn, defaults to TRUE
+#' @param startend TRUE/FALSE shape points for start and end points of dive, defaults to TRUE
+#' @return ggplot
+#' @import marmap
+#' @import ggplot2
+#' @export
+#' @author Sven Gastauer
+#'
+plot_gps <- function(gps, bathy=TRUE, daynight=TRUE, startend=TRUE){
+  library(marmap)
+  if (bathy){
+    miss.bath <- getNOAA.bathy(lon1 = (min(gps$Lon)-0.1), lon2 = ceiling(max(gps$Lon)+0.1),
+                             lat1 = floor(min(gps$Lat)-0.1), lat2 = ceiling(max(gps$Lat)+0.1))
+    p <- autoplot(miss.bath, geom = c("raster","contour"), colour = "white", interpolate=TRUE) +
+    scale_fill_gradientn(name='',
+                         values = scales::rescale(c(min(fortify.bathy(miss.bath)$z),
+                                                    -.1, 0, max(fortify.bathy(miss.bath)$z))),
+                         colors = c("steelblue4", "#C7E0FF", "grey50", "grey80"))+
+      geom_line(data=gps,aes(x=Lon, y=Lat),col='gray')+
+      ylab('Latitude')+xlab('Longitude')+
+      theme_classic()+
+      theme(text=element_text(size=16),
+            axis.text.x=element_text(angle=75,hjust=0, vjust=0),
+            legend.text = element_text(size=10))
+  }else{
+    p <- ggplot(data=gps,aes(x=Lon, y=Lat, group=Dive),col='gray')+geom_line()+
+      #scale_x_continuous(limits=c(min(gps$Lon)-0.1, max(gps$Lon)+0.1))+
+      #scale_y_continuous(limits=c(min(gps$Lat)-0.1, max(gps$Lat)+0.1), expand=c(0,0))+
+      ylab('Latitude')+xlab('Longitude')+
+      theme_classic()+
+      theme(text=element_text(size=16),
+            axis.text.x=element_text(angle=75,hjust=0, vjust=0),
+            legend.text = element_text(size=10))
+  }
+  if (daynight & startend)(p <- p + geom_point(data=gps,aes(x=Lon, y=Lat, col=sun, shape=var), size=0.9))
+  if (daynight & !startend)(p <- p + geom_point(data=gps,aes(x=Lon, y=Lat, col=sun), size=0.9))
+  if (!daynight & startend)(p <- p + geom_point(data=gps,aes(x=Lon, y=Lat, shape=var), size=0.9))
+  if (daynight){p<-p + scale_color_manual(values=c('black','lightgray', 'yellow'), name='')}
+  if(startend){p<-p+scale_shape_manual(values=c(4,19), name='')}
+
+  return(p)
+}
+
+#' Gets the standard nc path from a given csv path
+#' @description  This assumes that the standard file structure is kept intact
+#' @param csvpath path to the ZOnar csv files
+#' @export
+#' @author Sven Gastauer
+#' @return path to nc files
+ncpath_from_csvpath <-function(csvpath){
+  file.path(dirname(csvpath),"nc_zonar/")
+}
+
 

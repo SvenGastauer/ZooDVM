@@ -4,7 +4,7 @@
 \alias{get_mission}
 \title{get available files and missions in a given folder}
 \usage{
-get_mission(path, patterns = c("200kHz", "1000kHz", "Delta"))
+get_mission(path, patterns = c("200kHz", "1000kHz", "Delta"), ending = "*.csv")
 }
 \arguments{
 \item{path}{path that contains the zonar sv files}

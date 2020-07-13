@@ -1,86 +1,371 @@
 ---
-title: "Using Zooglider Zonar data in R"
-output: rmarkdown::html_vignette
+title: 'Using Zooglider Zonar data in R'
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 4
+    fig_width: 8 
+    fig_height: 4 
 vignette: >
-  %\VignetteIndexEntry{"Using Zooglider Zonar data in R"}
+  %\VignetteIndexEntry{Using Zooglider Zonar data in R}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 # Introduction
 
+  
 This should be used as a rough guide on how Zooglider and Zonar data can be used with R. This should give an overview of the basic functionalities of the generated netCDF files and the Zonar Sv  csv files.  
 This should be seen as an introductionary tutorial. All data should be available on the UCSD shared Zooglider data drive (//zgdata.ucsd.edu/data).  
-The dedicated R packageZooDVM is available on Github (add link) and and on the zgdata drive (add link).  
+The dedicated R package ZooDVM is available on [Github](https://github.com/SvenGastauer/ZooDVM) and and on the zgdata drive (add link).  
 
-## Getting started
+## Zooglider  
 
-### Installing packages
+*Zooglider* a new generation of gliders able to characterise the structure of zooplankton communities through high resolution optical recordings, quantify biological or physical boundaries zones and relative biological abundances through multi-frequency acoustic recordings with concurrent physical recordings of ambient fluorescence, temperature and salinity. For a full description of *Zooglider* please refer to[@ohman_zooglider_2019].  
 
-For this tutorial we need the *ZooDVM* and *ZooScatR* package, both are available from Github, from the UCSD zgdata shared drive.  
+## Acoustics background - How to get from raw acoustic data to Sv data  
+
+
+**Note:** *Here we follow the nomenclature defined in MacLennan et al [-@maclennan_consistent_2002] or where updated Demer et al [-@demer_calibration_2015]. For people not used to fisheries acoustic nomencalture, it is handy to remember that lower case variable names refer to coefficients (linear units) while uppercase variable names refer to strengths (log units, generally dB). Subscripts should have logical namings, one exception might be subscript a - refering to metric references and subscript A - refering to nautical miles.*  
+
+Acoustic recordings deliver high resolution information allowing for a quantification of the biological productivity through analysis of the net acoustic backscatter, segregated into functional groups based on multifrequency backscattering characteristics of marine organisms [@koslow_role_2009,@powell_changes_2015 @simmonds_fisheries_2008, @stanton_acoustic_1996].   
+Zooglider is equipped with the Zonar system. The Zonar system consists of two single beam echosounders, operated at 200 and 1000 kHz. In normal operation Zonar will emit one burst of 4 pings at each of the two frequencies. A summary of the current Zonar settings can be found in the calibration table below.   
+
+Typical acoustic echogram visualizations, generally involve a time component on the x-axis and a depth or range component on the y-axis. The fill values are often expressed as Scattering volume (*Sv*) or Target Strength (*TS*), which are metrics that can be derived from the raw Zonar count data.  
+
+First the data point depth is computed:  
+We can calculated the distance fro the transducer of the first sampling point ($z_0$)as:
+$$z_0=(t_b + \frac{\tau}{2}) \frac{c}{2 * 1000} $$
+where $t_b$ is the blanking time (typically 1) in ms, $\tau$ is the pulse duration in ms and $c$ is the sound speed in $ms^{-1}$. Now we can compute the distance from the transducer face of each sampling point ($d_z$) with $d_t$ the sampling interval in ms as:  
+$$d_z = n_{scan}*\frac{c}{2 * 1000}*d_t * 0.001 + z_0 $$
+to get the true depth of each sampling point, we have to add the depth of the glider at the time of the ping emission ($z_{glider}$) and multiply the euclidean distance of the sampling point from the transducer face by the cosinus of the glider pitch ($p_{glider}$):
+$$z= z_{glider} + d_z * cos(p_{glider})$$  
+
+Sv in dB re 1m^2m{-3} can be computed as:
+$$Sv = E(R) - SL - 10 log_{10}(\frac{c*\tau}{2}) - \Psi + 20log_{10}(d_z) + 2\alpha d_z + G = 10 * log_{10}(\sum\frac{\sigma_{bs}}{V})$$
+with $E(R)$ the acoustic signal express in dB re 1V, $SL$ the source level in dB, $c$ the sound speed in the ambient fluid medium in $ms^{-1}$, $\tau$ the pulse duration in $s$, $\Psi$ the equivalent two-way beam angle (solid angle subtended by an ideal conical beam that would produce the same volume integral as the square of the normalizedtransducer directivity) in steradians or dB re 1 sr, $dz$ the range to the target (The direct-path distance between objects, e.g. the transducer face and the target) in m, $\alpha$ the absorption coefficient, a metric of absorption loss in dB $m^{-1}$ and $G$ the on-axis calibration gain in dB re 1. $\sigma_{bs}$ is the backscattering cross-section [$m^2$].  
+
+
+
+Analoguously to Sv, TS can be computed as:
+$$TS = E(R) - SL -40log10(d_z) + 2(\alpha d_z) + G = 10*log_{10}(\sigma_{bs})$$
+
+
+The acoustic raw data read from Zonar is raw count data $ac_{raw}$, where a given count ($gn$ generally 40) can be used to translate the count data into *dB re 1V* ($E(R)_{raw}$): 
+$$E(R)_{dB} = \frac{ac_{raw}}{gn}$$
+or expressed in it's linear form:  
+$$E(R)_{lin} = 10^{\frac{E(R)_{dB}}{10}}$$
+
+SL is generally measured directly in the instrument. None such sensitivity measurements are available. Therefore SL is approximated, using the calibration data. During the calibration process measurements without any target in the pool are taken. These are labelled calibration noise measurements ($NL$). Asuming the background noise to be approximating zero, these measurements can be taken as an approximation of SL. SL now becomes:
+$$SL=\frac{NL}{gn} + G_0+40log_{10}(d_c+2\alpha_c d_c)$$
+with $d_c$ the measurement range and $\alpha_c$ the absorption coefficient given ambient calibration conditions and $G0$ the system gain.    
+
+## Calibration  
+
+Calibration is executed, largely following calibration procedures described by Demer et al [-@demer_calibration_2015], using a 10 mm tungsten carbide sphere. Calibration is completed on a regular basis in a purpose build pool. For the purpose of the calibration, the transducers are dismounted from the glider and mounted on a plate. The transducer is driven by a connected laptop. The position of the transducer can be adjusted vertically and it can be rotated. A 10 mm sphere with expected $TS_0$ in calibration conditions of -53.47 dB at 200 kHz and -50.92 at 1000 kHz is suspended at a distance of 5 m form the transducer face. Through systematic vertical movement and rotation, beam mapping can be achieved. On-axis calibraiton is then executed at the vertical position and the rotation, where the maximum backscatter was recorded.  
+$TS_0$ expressed in in raw acoustic dB values ($TS_c$) becomes:  
+$$TS_c = TS_0 + SL - 40log_{10}(d_c) - 2\alpha_c$$
+The on-axis calibration gain can be approximated as:
+$$G_{cal}=TS_c - TS_m$$ with $TS_m$ the measured raw on-axis values with the sphere positioned in the center of the beam expressed in dB re V.  
+$\Psi$ the equivalent beam angle si calculated as:
+$$\Psi = 10log_{10}(\frac{5.78}{(ka)^2})$$
+The wave length $\lambda$ can be computed as: $lambda = \frac{c}{f}$. The wave number $k$ is defined as $k=2\frac{\pi}{\lambda}$.  
+The active radius ($a$) is $$a=\frac{1.6}{k *sin(\frac{\theta_{3dB}}{2})}$$ with $\theta_{3dB}$ the angle from the transducer beam axis to the point of half-power.  
+
+
+
+# Getting started with ZooDVM
+
+## Installing packages
+
+For this tutorial we need the *ZooDVM* and *ZooScatR* package, both are available from Github, from the UCSD zgdata shared drive.     
+#### devtools to install packages from GitHub within R  
+
 Installing packages from GitHub requires the *devtools* pakcage to be installed. We can use the below code to check if devtools is installed and install it if it isn't:
 
-```{r}
+```{r devt, warning=FALSE, message=FALSE}
 if('devtools' %in% installed.packages()){
   message(Sys.time(), ': devtools is already available, no further action required. The install version is ',packageVersion('devtools'))
 }else{
-  install.packages('devtools')
+  install.packages('devtools',dependencies = TRUE, INSTALL_opts = '--no-lock')
 }
 library(devtools)
 ```
 
-Now we can proceed with installing *ZooDVM* and *ZooScatR* if needed:
+#### Check for other required packages  
 
-```{r}
-if('devtools' %in% installed.packages()){
-  message(Sys.time(), ': devtools is already available, no further action required. The install version is ',packageVersion('devtools'))
-}else{
-  install.packages('devtools')
+Let's check if all packages needed are available. For this pupose we can create a little helper function:
+```{r chkpkg_fun,warning=FALSE, message=FALSE}
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg))
+    install.packages(new.pkg, dependencies = TRUE, INSTALL_opts = '--no-lock')
+  sapply(pkg, require, character.only = TRUE)
 }
-library(devtools)
 ```
 
-# How to get from raw acoustic data to Sv data  
+Now we can simply check the availability of any package, see below as an example:
+
+```{r chkpkg,warning=FALSE, message=FALSE}
+check.packages(c('ggplot2','dplyr','suncalc','ncdf4','pracma', 'tidyr', 'marmap','knitr','interp','mgcViz','mgcv'))
+
+```
+
+## Installing ZooDVM and ZooScatR  
+
+Now we can proceed with installing *ZooDVM* and *ZooScatR* if needed.
+
+Checking if ZooScatr and ZooDVM are available and installing them if not (with the command below all depencies and vignettes will be installed with the packages):
+
+```{r check_pack,warning=FALSE, message=FALSE}
+if(!('ZooDVM' %in% installed.packages())){
+  devtools::install_github('SvenGastauer/ZooDVM', build_vignettes = TRUE, dependencies = TRUE)
+}else{message(Sys.time(), ': ZooDVM is already installed')}
+
+if(!('ZooScatR' %in% installed.packages())){
+  devtools::install_github('AustralianAntarcticDivision/ZooScatR', build_vignettes = TRUE, dependencies = TRUE)
+}else{message(Sys.time(), ': ZooScatR is already installed')}
+
+#library(ZooDVM)
+library(ZooScatR)
+library(ggplot2) #for other plotting needs
+library(dplyr) # for fast and clean data manipulation
+library(tidyr) # for clean data manipulation
+
+```
+
+### Troubleshoot installation errors  
+
+If you get errors concerning Rcpp or devtools or other packages tha tneed compilation, we will have to install the latest version of Rtools (windows users), devtools and Rcpp.  
+Please note that the below packages are unrelated to ZooDVM and the author has noinfluence on the development of these packages. 
+
+
+If you get errors concerning [Devtools](https://cran.r-project.org/web/packages/devtools/index.html), try reinstalling devtools using:
+```{r devtools, eval=FALSE}
+ install.packages('devtools',dependencies = TRUE, INSTALL_opts = '--no-lock')
+```
+
+If you get errors concerning [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) or other packages that need compiling, make sure to install it using *dependencies = TRUE, INSTALL_opts = '--no-lock'* options:
+
+```{r rcpp, eval=FALSE}
+ install.packages('Rcpp',dependencies = TRUE, INSTALL_opts = '--no-lock')
+```
+
+[Rtools](https://cran.r-project.org/bin/windows/Rtools/) - Windows - At the time of writing a new version of Rtools and the way it is used has been implemented, which might cause some trouble. If you get a message such as:  
+```WARNING: Rtools is required to build R packages, but is not currently installed. ```  
+Install Rtools by downloading the required binary package from cran:  
+* [Windows users](https://cran.r-project.org/bin/windows/Rtools/) 
+  
+
+# Getting Sv data into R  
 
 First we will have to define the directory where we can find all the needed data and have a look at the available missions:
 
-```{r}
-library(ZooDVM)
+```{r get_miss}
 path = 'C:\\Users\\sven\\Documents\\Zonar\\data\\csv_zonar\\'
 mm = get_mission(path)
 ```
+The *ZooDVM* get_mission() function by default provides us with a list container containing 4 sets. One list containing the 200 kHz, one the 1000 kHz and one the Sv Delta filenames and paths. A fourth list contains just the mission names. CUrrently the following missions are avaialble:
+`r knitr::kable(data.frame(Index=1:length(mm$missions),Mission=mm$missions))`.  
 
-# Reading Sv data for one mission
+
+## Reading Sv data for one mission  
+
+We can read the Sv data at 200 kHz, 1000 kHz and Sv delta with one function:  
+
 ```{r}
+sel=15
+Sv = get_sv(path,sel)
+```
+The data is now found in `Sv$data$'1000kHz'`, `Sv$data$'200kHz'`, `Sv$data$'Delta'` and the plots are in `Sv$plots` with the same endings, additionally it contains the gps infomation in `Sv$gps`.  
+Let's have a look at the basic plots:  
 
+```{r}
+Sv$plots$`1000kHz`
 ```
 
-## Plotting Sv data with Day/Night info  
+```{r}
+Sv$plots$`200kHz`
+```
+
+```{r}
+Sv$plots$`Delta`
+```
+
+We can also use the obtained information to make some adjustments to the plot through the `plot_sv()` function, like choosing another color palette:  
+
+```{r}
+plot_sv(Sv$data$`1000kHz`,cmaps="RdBu", svmax=-55, svmin=-80)
+```
+
+To add the day/night bar on top we can do:
+
+```{r}
+plot_sv(Sv$data$`1000kHz`,gps=Sv$gps,cmaps="RdBu")
+```
+
 
 ## Detecting DVM
 
+```{r}
+
+dvm = pdvm(ac_group=Sv$data$`1000kHz`,
+         vmin=-85,
+         vmax=-60,
+         perc=65,
+         dcut=280,scut=15, dskip=3,dend=3)
+
+p=Sv$plots$`1000kHz`
+p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+```
+
+It can be useful to try the `dvm_app(path)` function to find the optimal settings for the DVM detection for a given mission at a given freuqency. This funciton will open a shiny app in a browser window, which allows determination of the DVM optimum settings interactively.
+
+![dvm app](dvmapp.png)
+
 # Using netCDF files for additional information  
 
+The ZOnar netCDF files contain more information than just the downsampled Sv information. The ZOnar netCDF files also include information about the hydrography (i.e. ambient temperature, salinity, fluorescence), GPS information and some coarse Zoocam data as well as engineering details.  
+From the csv folder we can get the path (`ncpath_from_csvpath(path)`) to the netCDF files.
+
+```{r get_ncpath}
+
+ncpath = ncpath_from_csvpath(path)
+```
+
+## Get acoustic calibraiton information  
+
+With ZooDVM we can easily access the acoustic calibraiton information used to calculate Sv:
+```{r}
+calinfo = get_accal(ncpath, sel)
+kable(calinfo)
+```
+  
 ## Getting GPS info from netCDF file
+
+The is a simple function to extract the GPS information for a given mission (mission can be selected as an integer from the above shown list or as a string with the full mission name). Here we select mission number 15, which is the Pt Sur filament mission:  
+
+```{r get_gps}
+sel = 15 #selected mission
+gps = get_gps(ncpath, mission=sel)
+```
+Plots can then easily be created using the plot_gps function. To get a bathymetry background set *bathy=TRUE*, to color points according to day and night set *daynight=TRUE* and the change the shape of the points according to the start and end points of the dive set *startend = TRUE*:
+```{r warning=FALSE, message=FALSE}
+plot_gps(gps, bathy=TRUE, daynight=TRUE,startend=TRUE)
+```
+
+Or without a background map:
+
+```{r}
+plot_gps(gps, bathy=FALSE, daynight=TRUE,startend=TRUE)
+```
 
 ## Getting environment info from netCDF file
 
+```{r get_env}
+sel = 15 #selected mission
+env = get_env(ncpath, mission=sel)
+```
+```{r}
+plot_env(env,'temp', 'Temperature')
+```
+```{r}
+plot_env(env,'sal', 'Salinity')
+```
+```{r}
+plot_env(env,'fluo', 'Fluorescence', lims=c(100, 1500))
+```
 ## GAM for DVM vs environment
+
+```{r}
+# 
+# 
+# env_r <- env %>% group_by(Dive,Depth_r) %>% summarise(temp =mean(temp), sal=mean(sal), fluo=mean(fluo))
+# envSv=left_join(Sv$data$`1000kHz`,env)
+# 
+# dvm = pdvm(ac_group=Sv$data$`1000kHz`,
+#          vmin=-85,
+#          vmax=-60,
+#          perc=65,
+#          dcut=280,scut=10, dskip=3,dend=3)
+# 
+# 
+# esurf <- env[env$Depth_r<=50 & env$Depth_r>=10,] %>% group_by(Dive) %>%summarise(temp_surf=mean(temp),
+#                                                       sal_surf=mean(sal),
+#                                                       fluo_surf = mean(fluo))
+# ddif = 10
+# dvmd <- data.frame(Dive=dvm$Dive, d0=dvm$Depth - ddif, d1 = dvm$Depth + ddif,dvm=dvm$Depth)
+# 
+# envdvm <- full_join(env,dvmd)
+# envdvm <- full_join(envdvm,esurf)
+# envdvm = full_join(envdvm, gps)
+# subsv = Sv$data$`1000kHz`
+# head(subsv)
+# 
+# envsum <- na.omit(envdvm[envdvm$Depth_r >= envdvm$d0 & envdvm$Depth_r<= envdvm$d1, ]) %>%
+#   group_by(Dive) %>% 
+#   summarise(Depth =mean(Depth_r),
+#             Dive=mean(Dive),
+#             DVM = mean(dvm),
+#             temp=mean(temp),
+#             sal = mean(sal),
+#             fluo=mean(fluo),
+#             temp_surf = mean(temp_surf),
+#             sal_surf = mean(sal_surf),
+#             fluo_surf = mean(fluo_surf),
+#             d0=mean(d0),
+#             d1=mean(d1),
+#             dt = first(sun),
+#             lon = mean(Lon),
+#             lat = mean(Lat))
+# 
+# library(mgcv)
+# envsum=data.frame(envsum)
+# get_gam <- function(envsum, dn){
+#   sub = envsum[envsum$dt==unique(envsum$dt)[dn],]
+#   g1=mgcv::gam(data=sub, 
+#                DVM~s(temp)+s(sal)+s(fluo_surf))
+#   return(g1)
+# }
+# 
+# daygam <- get_gam(envsum, 1)
+# nightgam <- get_gam(envsum, 3)
+# 
+# library(mgcViz)
+# daygam=mgcv::gam(data=envsum, 
+#                DVM~s(temp_surf)+s(sal_surf)+s(fluo_surf) + s(sal)+s(temp)+dt)
+# viz <- getViz(daygam)
+# print(plot(viz, allTerms = T), pages = 1)
+# 
+# plot(gam(data=envsum, -DVM~s(fluo_surf)))
+
+```
+
+```{r}
+# ggplot(data=envsum, aes(x=fluo_surf, DVM))+geom_point()+facet_grid(.~dt)+geom_smooth(method='loess')+scale_y_reverse()
+# 
+# plot(viz) + l_dens(type = "cond", alpha=0.5) + 
+#   scale_fill_gradient(low = "white", high = "black", oob=scales::squish, na.value = 'transparent', name='Density')+
+#  l_rug(mapping = aes(x=x, y=y), alpha = 0.8) +
+#   l_fitLine() +
+#    l_ciLine(mul = 5, colour = "black", linetype = 2) +
+#    l_points(shape = 19, size = 1, alpha = 0.1) + theme_classic()
+```
+# Getting Zoocam ROIs size class info  
+
 
 # Getting Zoocam grayscale info  
 
-# Simulating targets with ZooScat
+TBA
+
+
+# Simulating targets with ZooScat  
+
+
 
 ## g & h values  
 
+
+
 ## Simulations  
 
-```{r}
-plot(cars)
-```
-
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
-
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

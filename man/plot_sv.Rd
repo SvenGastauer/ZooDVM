@@ -6,9 +6,13 @@
 \usage{
 plot_sv(
   d1,
-  gps,
+  gps = NULL,
   cols = c(Night = "black", `Dusk/Dawn` = "gray", Day = "yellow"),
-  cmaps = c("RdYlBu", "RdBu")
+  cmaps = c("RdYlBu", "RdBu"),
+  svmin = -85,
+  svmax = -45,
+  deltamin = -10,
+  deltamax = 10
 )
 }
 \arguments{
@@ -17,6 +21,14 @@ plot_sv(
 \item{gps}{dataframe containing lat, lon, and time information}
 
 \item{cmaps}{colour maps for Sv data and Sv delta if needed, defaults to c("RdYlBu",'RdBu')}
+
+\item{svmin}{minimum value for Sv color, defaults to -85}
+
+\item{svmax}{maximum value for Sv color, defaults to -45}
+
+\item{deltamin}{minimum value for delta Sv, defaults to -10}
+
+\item{deltamax}{maximum value for delta Sv, defaults to +10}
 
 \item{col}{color scheme for the day/night bar defaults to "Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"}
 }
