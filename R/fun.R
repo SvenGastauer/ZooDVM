@@ -51,7 +51,7 @@ plot_sv <- function(d1, gps=NULL,
                     cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"),
                     cmaps=c("RdYlBu",'RdBu'),
                     svmin=-85,svmax=-45,deltamin=-10,deltamax=10){
-  if(unique(d1$variable) %in% c('1000kHz','200kHz')){lims=c(svmin,svmax); cmap = cmaps[1]}
+  if(unique(d1$variable) %in% c('1000kHz','200kHz','Sv','TS')){lims=c(svmin,svmax); cmap = cmaps[1]}
   else{lims=c(deltamin,deltamax); cmap=cmaps[2]}
   p<-ggplot()+
     geom_tile(data=d1,aes(x=Dive, y=Depth_r,fill=Sv))+
@@ -65,7 +65,7 @@ plot_sv <- function(d1, gps=NULL,
     theme(text=element_text(size=16),
           legend.position = 'top')
 if (!is.null(gps)){
-  p <- p + geom_segment(data=gps,aes(x=Dive,xend=Dive+1, y=-3, yend=-3, colour=sun),show.legend = FALSE, size=3,alpha=0.5)+
+  p <- p + geom_segment(data=gps,aes(x = Dive, xend = Dive + 1, y = -5, yend = -5, colour=sun),show.legend = FALSE, size=1,alpha=1)+
     scale_colour_manual(values = cols, name='')
 }
   return(p)
@@ -164,9 +164,14 @@ get_daynight <- function(ncpath, mission){
 #' @import dplyr
 #' @return  dataframe contains the per dive dvm depth
 #' @author Sven Gastauer
-get_dvm <- function(sv, cutval){
+get_dvm <- function(sv, cutval, from='surface'){
+  if (from=='surface'){
+    data = sv[order(sv$Dive,sv$Depth),]
+  }else{
+    data = sv[order(sv$Dive,-sv$Depth),]
+  }
 
-  dvm = sv[order(sv$Dive,sv$Depth),] %>%
+  dvm = data %>%
     group_by(Dive) %>%
     filter(Perc >= cutval) %>%
     slice(1) %>% # takes the first occurrence if there is a tie
@@ -240,7 +245,6 @@ get_gps <- function(ncpath, mission){
   }
   message(Sys.time(),': Selected mission - ',mission)
 
-  nc_data <- ncdf4::nc_open(paste0(ncpath, '/',mission))
 
   message(Sys.time(),': Getting GPS')
   t_end <- ncvar_get(nc_data, "gps/UTC_time_fix_end")

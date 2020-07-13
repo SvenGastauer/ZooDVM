@@ -4,7 +4,7 @@
 \alias{get_dvm}
 \title{Function to get the estimated depth of the DVM based on Sv values and a cutoff percentage}
 \usage{
-get_dvm(sv, cutval)
+get_dvm(sv, cutval, from = "surface")
 }
 \arguments{
 \item{sv}{dataframe containing Sv and depth information for each dive}

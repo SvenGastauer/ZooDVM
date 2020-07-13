@@ -14,7 +14,8 @@ Depends:
 	tidyr,
 	ncdf4,
 	marmap,
-	data.table
+	data.table,
+	raster
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1

@@ -15,14 +15,23 @@ dvm_app <- function(path) {
     ui = fluidPage(
       sidebarLayout(
         sidebarPanel(
-          selectInput('miss','Select mission',mm$missions),
-          selectInput('svvar','Sv variable',names(Sv$data)),
-          sliderInput("Svrange", label = h3("Sv Range"), min = -95, max = -20, value = c(-85, -45)),
-          numericInput('perc','Percentage',82),
-          numericInput('dcut','Depth cut',300),
-          numericInput('scut','Surface cut',10),
-          numericInput('dskip','# Dives to Skip',3),
-          numericInput('dend','# Dives to ignore from end',3)),
+          tabsetPanel(
+            tabPanel("Mission Settings",
+                     selectInput('miss','Select mission',mm$missions),
+                     selectInput('svvar','Sv variable',names(Sv$data)),
+                     hr()),
+            tabPanel('DVM settings',
+                     sliderInput("Svrange", label = ("Sv Range"), min = -95, max = -20, value = c(-85, -45)),
+                     numericInput('perc','Percentage',82),
+                     radioButtons("updown", "COmpute percentage from:",
+                                  c("Bottom" = "bottom",
+                                    "Surface" = "surface")),
+                     numericInput('dcut','Depth cut',300),
+                     numericInput('scut','Surface cut',10),
+                     numericInput('dskip','# Dives to Skip',3),
+                     numericInput('dend','# Dives to ignore from end',3)),
+          tabPanel('Filter',
+                   numericInput('xwin','Window size x',3)))),
 
         mainPanel(
           plotOutput("svplot"),
@@ -30,8 +39,10 @@ dvm_app <- function(path) {
         )),
     server = function(input, output) {
       dvm <- reactive({
-        Sv = get_sv(path,input$miss)
-        dvm = pdvm(ac_group=Sv$data[input$svvar][[1]],
+
+        Sv = get_sv(path,input$miss, input$updown)
+        Svval = Sv$data[input$svvar][[1]]
+        dvm = pdvm(ac_group=Svval,
                    vmin=as.numeric(input$Svrange[1]),
                    vmax=as.numeric(input$Svrange[2]),
                    perc=as.numeric(input$perc),
