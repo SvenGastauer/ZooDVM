@@ -27,7 +27,7 @@ if(!('ZooScatR' %in% installed.packages())){
   devtools::install_github('AustralianAntarcticDivision/ZooScatR', build_vignettes = TRUE, dependencies = TRUE)
 }else{message(Sys.time(), ': ZooScatR is already installed')}
 
-#library(ZooDVM)
+library(ZooDVM)
 library(ZooScatR)
 library(ggplot2) #for other plotting needs
 library(dplyr) # for fast and clean data manipulation
@@ -65,10 +65,10 @@ plot_sv(Sv$data$`1000kHz`,gps=Sv$gps,cmaps="RdBu")
 
 ## -----------------------------------------------------------------------------
 
-dvm = pdvm(ac_group=Sv$data$`1000kHz`,
+dvm = pdvm(ac_group_sub=Sv$data$`1000kHz`,
          vmin=-85,
          vmax=-60,
-         perc=65,
+         perc=100,
          dcut=280,scut=15, dskip=3,dend=3)
 
 p=Sv$plots$`1000kHz`

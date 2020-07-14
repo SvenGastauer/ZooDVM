@@ -25,7 +25,18 @@ filter2d <- function(data, x=3,y=3,xval='Dive',yval='Depth_r', val='Sv', log=TRU
   depths = ceiling(ra@extent@ymin):floor(ra@extent@ymax)
   ra2[,xval]= rep(dives, times=length(depths))
   ra2[,yval]= rep(rev(depths), each=length(dives))
-  ra2$variable=val
+  #ra2$variable=val
+  ra2 = left_join(data[,names(data)!='Sv'],ra2)
 
   return(ra2)
+}
+
+
+anomaly <- function(data, fun='mean'){
+  data %>%
+    na.omit() %>%
+    group_by(Dive,Depth_r) %>%
+    summarise(Svlin=10^(Sv/10))%>%
+    group_by(Dive) %>%
+    mutate(SvProp = 10*log10(Svlin - median(Svlin) - min(Svlin - median(Svlin))))
 }

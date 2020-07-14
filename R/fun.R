@@ -122,20 +122,20 @@ get_daynight <- function(ncpath, mission){
   fn = list.files(path=ncpath,glob2rx(paste0(mission,'*.nc')), full.names = TRUE)
   nc_data <- ncdf4::nc_open(fn)
 
-  t_end <- ncvar_get(nc_data, "gps/UTC_time_fix_end")
+  t_end <- ncdf4::ncvar_get(nc_data, "gps/UTC_time_fix_end")
   ori = strsplit(ncatt_get(nc_data, "gps/UTC_time_fix_end")$units,'seconds since ')[[1]][2]
   t_end = as.POSIXct(t_end,origin=ori)
   attr(t_end,'tzone') = 'UTC'
 
-  t_start <- ncvar_get(nc_data, "gps/UTC_time_fix_start")
+  t_start <- ncdf4::ncvar_get(nc_data, "gps/UTC_time_fix_start")
   ori = strsplit(ncatt_get(nc_data, "gps/UTC_time_fix_start")$units,'seconds since ')[[1]][2]
   t_start = as.POSIXct(t_start,origin=ori)
   attr(t_start,'tzone') = 'UTC'
 
-  lon_start <- ncvar_get(nc_data, "gps/lon_start")
-  lon_end <- ncvar_get(nc_data, "gps/lon_end")
-  lat_start <- ncvar_get(nc_data, "gps/lat_start")
-  lat_end <- ncvar_get(nc_data, "gps/lat_end")
+  lon_start <- ncdf4::ncvar_get(nc_data, "gps/lon_start")
+  lon_end <- ncdf4::ncvar_get(nc_data, "gps/lon_end")
+  lat_start <- ncdf4::ncvar_get(nc_data, "gps/lat_start")
+  lat_end <- ncdf4::ncvar_get(nc_data, "gps/lat_end")
   gps =data.frame(Time_start =t_start,
                   Time_end = t_end,
                   Lon_start = lon_start,
@@ -164,15 +164,10 @@ get_daynight <- function(ncpath, mission){
 #' @import dplyr
 #' @return  dataframe contains the per dive dvm depth
 #' @author Sven Gastauer
-get_dvm <- function(sv, cutval, from='surface'){
-  if (from=='surface'){
-    data = sv[order(sv$Dive,sv$Depth),]
-  }else{
-    data = sv[order(sv$Dive,-sv$Depth),]
-  }
-
-  dvm = data %>%
+get_dvm <- function(sv, cutval){
+  dvm = sv %>%
     group_by(Dive) %>%
+    arrange(Dive,Perc) %>%
     filter(Perc >= cutval) %>%
     slice(1) %>% # takes the first occurrence if there is a tie
     ungroup()
@@ -192,7 +187,7 @@ get_dvm <- function(sv, cutval, from='surface'){
 #' @param dend number of dives to skip at the end, defaults to 0
 #' @export
 #' @import dplyr
-pdvm <- function(ac_group_sub,vmin=-85,vmax=-45,perc=65,dcut=300,scut=20,dr=1,dskip=0,dend=0){
+pdvm <- function(ac_group_sub,vmin=-85,vmax=-45,perc=65,dcut=300,scut=20,dr=1,dskip=0,dend=0, updown='surface'){
   ac_group_sub = ac_group_sub[ac_group_sub$Dive > min(ac_group_sub$Dive)+dskip,]
   ac_group_sub = ac_group_sub[ac_group_sub$Dive < max(ac_group_sub$Dive)-dend,]
   ac_group_sub$Sv[ac_group_sub$Sv>vmax] = vmax
@@ -201,7 +196,15 @@ pdvm <- function(ac_group_sub,vmin=-85,vmax=-45,perc=65,dcut=300,scut=20,dr=1,ds
   ac_group_sub = ac_group_sub[ac_group_sub$Depth_r >= scut,]
   ac_group_sub$Depth = round(ac_group_sub$Depth_r/dr)*dr
 
+  if (updown=='surface'){
+    ac_group_sub = ac_group_sub[order(ac_group_sub$Dive,ac_group_sub$Depth_r),]
+  }else{
+    ac_group_sub = ac_group_sub[order(ac_group_sub$Dive,-ac_group_sub$Depth_r),]
+  }
+
   ac_group_sub$Sv_lin=10**(ac_group_sub$Sv/10)
+
+
   abc = na.omit(data.frame(ac_group_sub)) %>%
     group_by(Dive) %>%
     #mutate(Sv_lin = mean(10^(Sv/10)))%>%
@@ -247,20 +250,21 @@ get_gps <- function(ncpath, mission){
 
 
   message(Sys.time(),': Getting GPS')
-  t_end <- ncvar_get(nc_data, "gps/UTC_time_fix_end")
+  nc_data <- ncdf4::nc_open(paste0(ncpath, '/' ,mission))
+  t_end <- ncdf4::ncvar_get(nc_data, "gps/UTC_time_fix_end")
   ori = strsplit(ncatt_get(nc_data, "gps/UTC_time_fix_end")$units,'seconds since ')[[1]][2]
   t_end = as.POSIXct(t_end,origin=ori)
   attr(t_end,'tzone') = 'UTC'
 
-  t_start <- ncvar_get(nc_data, "gps/UTC_time_fix_start")
+  t_start <- ncdf4::ncvar_get(nc_data, "gps/UTC_time_fix_start")
   ori = strsplit(ncatt_get(nc_data, "gps/UTC_time_fix_start")$units,'seconds since ')[[1]][2]
   t_start = as.POSIXct(t_start,origin=ori)
   attr(t_start,'tzone') = 'UTC'
 
-  lon_start <- ncvar_get(nc_data, "gps/lon_start")
-  lon_end <- ncvar_get(nc_data, "gps/lon_end")
-  lat_start <- ncvar_get(nc_data, "gps/lat_start")
-  lat_end <- ncvar_get(nc_data, "gps/lat_end")
+  lon_start <- ncdf4::ncvar_get(nc_data, "gps/lon_start")
+  lon_end <- ncdf4::ncvar_get(nc_data, "gps/lon_end")
+  lat_start <- ncdf4::ncvar_get(nc_data, "gps/lat_start")
+  lat_end <- ncdf4::ncvar_get(nc_data, "gps/lat_end")
   Dive <- seq(1,length(lon_start))
   var = rep(c('start', 'stop'), each=length(lon_end))
 

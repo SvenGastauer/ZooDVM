@@ -23,7 +23,7 @@ dvm_app <- function(path) {
             tabPanel('DVM settings',
                      sliderInput("Svrange", label = ("Sv Range"), min = -95, max = -20, value = c(-85, -45)),
                      numericInput('perc','Percentage',82),
-                     radioButtons("updown", "COmpute percentage from:",
+                     radioButtons("updown", "Compute percentage from:",
                                   c("Bottom" = "bottom",
                                     "Surface" = "surface")),
                      numericInput('dcut','Depth cut',300),
@@ -31,7 +31,11 @@ dvm_app <- function(path) {
                      numericInput('dskip','# Dives to Skip',3),
                      numericInput('dend','# Dives to ignore from end',3)),
           tabPanel('Filter',
-                   numericInput('xwin','Window size x',3)))),
+                   numericInput('xwin','Window size x',3),
+                   numericInput('ywin','Window size y',3),
+                   selectInput('func','Filter function',c('None','mean','median','max','min','sd','var')),
+                   )
+          )),
 
         mainPanel(
           plotOutput("svplot"),
@@ -39,9 +43,16 @@ dvm_app <- function(path) {
         )),
     server = function(input, output) {
       dvm <- reactive({
+        print(input$updown)
+        Sv = get_sv(path,input$miss)
 
-        Sv = get_sv(path,input$miss, input$updown)
-        Svval = Sv$data[input$svvar][[1]]
+        if (input$func != 'None'){
+          Svval = Sv$data[input$svvar][[1]]
+          Svval = filter2d(Svval, x=input$xwin,y=input$ywin,xval='Dive',yval='Depth_r', val='Sv', log=TRUE,fun=input$func)
+        }else{
+          Svval = Sv$data[input$svvar][[1]]
+        }
+
         dvm = pdvm(ac_group=Svval,
                    vmin=as.numeric(input$Svrange[1]),
                    vmax=as.numeric(input$Svrange[2]),
@@ -49,20 +60,23 @@ dvm_app <- function(path) {
                    dcut=as.numeric(input$dcut),
                    scut=as.numeric(input$scut),
                    dskip=as.numeric(input$dskip),
-                   dend=as.numeric(input$dend))
-        return(list(Sv,dvm))
+                   dend=as.numeric(input$dend),
+                   updown=input$updown)
+        return(list(Svval,dvm, Sv$gps))
       })
       output$svplot <- renderPlot({
-        Sv=dvm()[[1]]
+        dvm=dvm()
+        Sv = dvm[[1]]
+        gps = dvm[[3]]
         #print(Sv[[1]])
-        p=plot_sv(Sv$data[input$svvar][[1]],Sv$gps,svmin=input$Svrange[1], svmax=input$Svrange[2])
-        dvm = dvm()[[2]]
+        p=plot_sv(Sv,gps,svmin=input$Svrange[1], svmax=input$Svrange[2])
+        dvm = dvm[[2]]
         p<-p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
         p
       })
     output$dplot <- renderPlot({
-      dvm = dvm()[[2]]
-      ggplot(data=dvm, aes(x=sun,y=Depth_r))+
+      dvmdat = dvm()[[2]]
+      ggplot(data=dvmdat, aes(x=sun,y=Depth_r))+
         xlab('Dive #')+ylab('Depth [m]')+
         geom_point()+theme_classic()+
         theme(text=element_text(size=16))

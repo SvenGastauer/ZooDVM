@@ -13,7 +13,8 @@ pdvm(
   scut = 20,
   dr = 1,
   dskip = 0,
-  dend = 0
+  dend = 0,
+  updown = "surface"
 )
 }
 \arguments{
