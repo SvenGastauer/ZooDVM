@@ -64,12 +64,14 @@ plot_sv(Sv$data$`1000kHz`,cmaps="RdBu", svmax=-55, svmin=-80)
 plot_sv(Sv$data$`1000kHz`,gps=Sv$gps,cmaps="RdBu")
 
 ## -----------------------------------------------------------------------------
-
-dvm = pdvm(ac_group_sub=Sv$data$`1000kHz`,
+dvm = pdvm(Sv$data$`1000kHz`,
          vmin=-85,
-         vmax=-60,
-         perc=100,
-         dcut=280,scut=15, dskip=3,dend=3)
+         vmax=-58,
+         perc=25,
+         dcut=280,scut=15, 
+         dskip=3,
+         dend=3,
+         updown='bottom')
 
 p=Sv$plots$`1000kHz`
 p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)

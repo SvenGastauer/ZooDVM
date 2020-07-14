@@ -12,7 +12,8 @@ plot_sv(
   svmin = -85,
   svmax = -45,
   deltamin = -10,
-  deltamax = 10
+  deltamax = 10,
+  variable = NULL
 )
 }
 \arguments{

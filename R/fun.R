@@ -50,15 +50,41 @@ get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta'), ending=
 plot_sv <- function(d1, gps=NULL,
                     cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"),
                     cmaps=c("RdYlBu",'RdBu'),
-                    svmin=-85,svmax=-45,deltamin=-10,deltamax=10){
-  if(unique(d1$variable) %in% c('1000kHz','200kHz','Sv','TS')){lims=c(svmin,svmax); cmap = cmaps[1]}
-  else{lims=c(deltamin,deltamax); cmap=cmaps[2]}
+                    svmin=-85,svmax=-45,deltamin=-10,deltamax=10, variable=NULL){
+  if (is.null(variable)){variable = unique(d1$variable)}else{vari=variable}
+  if(variable %in% c('1000kHz','200kHz','Sv','TS')){
+    lims=c(svmin,svmax); cmap = cmaps[1]
+    vari='Sv'
+    nam = paste('Sv' , variable)
+    }else{
+      if(variable == 'Scaled Anomaly'){
+        if (deltamin < - 1){deltamin=-1}
+        if (deltamax > 1){deltamax=1}
+        lims=c(deltamin,deltamax)
+        cmap=cmaps[2]
+        vari='scaledAnomaly'
+        nam = 'Scaled Anomaly'
+      }
+      else{
+        lims=c(deltamin,deltamax)
+        cmap=cmaps[2]
+        vari=variable
+        if (variable == 'SvAnomal'){
+          nam = 'Sv Anomaly'
+        }else{
+          if(variable=='Delta'){
+            nam = 'Delta Sv'
+            vari = 'Sv'
+          }else{
+            nam= variable}}}
+      }
+
   p<-ggplot()+
-    geom_tile(data=d1,aes(x=Dive, y=Depth_r,fill=Sv))+
+    geom_tile(data=d1,aes_string(x='Dive', y='Depth_r',fill=vari))+
     scale_y_reverse()+
     scale_fill_distiller(palette = cmap, na.value = 'transparent',
                          limits=lims,
-                         name=paste('Sv',unique(d1$variable)), oob=scales::squish)+
+                         name=nam, oob=scales::squish)+
     scale_x_continuous(expand=c(0.01,0.01))+
     xlab('Dive #') + ylab('Depth [m]')+
     theme_classic()+
