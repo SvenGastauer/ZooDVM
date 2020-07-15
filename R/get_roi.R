@@ -15,19 +15,23 @@ roipath_from_csvpath <-function(csvpath){
 #' @import data.table
 #' @export
 #' @returndataframe contiaining the ROI counts for each Dive and Depth interval
-get_roi_counts(roidir, mission){
+get_roi_counts <- function(roidir, mission){
   require(data.table)
   if (is.numeric(mission)){
     mission = get_mission(roidir, ending='*.csv', patterns=NULL)[mission]
   }
-  message(Sys.time(),': Selected mission - ',mission)
+    message(Sys.time(),': Selected mission - ',mission)
+  x=substr(mission,1,nchar(mission)-3);ending='.csv'
+  fn = list.files(roidir, pattern=glob2rx(paste0('*',x,'*')),full.names = TRUE)#, substr(mission, 1 , nchar(mission)-3),'*'))
 
-  rois = data.frame(fread(paste0(roidir,'/',mission), header = T))
-  for(i in 10:4){
+  rois = data.frame(fread(fn), header = T)
+  for(i in rev(grep('Total',names(rois)))){
     rois[,i] = rois[,i] - rois[,i+1]
   }
-  names(rois)[1:11] <- c('fn','SensitivityEdgeCOunt','SensitivityLevel','ROI25','ROI45','ROI75','ROI100','ROI75','ROI125','ROI200','Dive')
+  names(rois)[(grep('Total',names(rois)))] <- c('ROI25','ROI45','ROI75','ROI100','ROI75','ROI125','ROI200')
+  names(rois)[(grep('Temperature',names(rois)))] <- 'Temperature'
+  names(rois)[(grep('Unix',names(rois)))] <- 'UnixTime'
+  names(rois)[(grep('Rho',names(rois)))] <- 'Rho'
+  names(rois)[(grep('Pressure',names(rois)))] <- 'Pressure'
   return(rois)
 }
-head(rois)
-rois%>%

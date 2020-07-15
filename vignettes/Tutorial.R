@@ -76,6 +76,8 @@ dvm = pdvm(Sv$data$`1000kHz`,
 p=Sv$plots$`1000kHz`
 p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
 
+anomaly(Sv$data$`1000kHz`,'mean')
+
 ## ----get_ncpath---------------------------------------------------------------
 
 ncpath = ncpath_from_csvpath(path)
