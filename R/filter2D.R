@@ -27,6 +27,7 @@ filter2d <- function(data, x=3,y=3,xval='Dive',yval='Depth_r', val='Sv', log=TRU
   ra2[,yval]= rep(rev(depths), each=length(dives))
   #ra2$variable=val
   ra2 = left_join(data[,names(data)!=val],ra2)
+  ra2$variable='Sv'
 
   return(ra2)
 }
@@ -38,7 +39,7 @@ filter2d <- function(data, x=3,y=3,xval='Dive',yval='Depth_r', val='Sv', log=TRU
 #' @export
 #' @import dplyr
 #'
-anomaly <- function(data, fun='median', replace=FALSE, v='SvANomal'){
+anomaly <- function(data, fun='median', replace=FALSE, v='SvAnomal'){
   ano = data %>%
     na.omit()%>%
     group_by(Dive,Depth_r) %>%

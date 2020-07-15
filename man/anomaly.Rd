@@ -4,7 +4,7 @@
 \alias{anomaly}
 \title{Simple anomaly filter}
 \usage{
-anomaly(data, fun = "median", replace = FALSE, v = "SvANomal")
+anomaly(data, fun = "median", replace = FALSE, v = "SvAnomal")
 }
 \arguments{
 \item{data}{data containing the x, y and dat avalues}

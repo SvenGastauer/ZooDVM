@@ -46,6 +46,7 @@ mm = get_mission(path)
 
 ## -----------------------------------------------------------------------------
 sel=15
+mission = mm$missions[sel]
 Sv = get_sv(path,sel)
 
 ## -----------------------------------------------------------------------------
@@ -63,6 +64,32 @@ plot_sv(Sv$data$`1000kHz`,cmaps="RdBu", svmax=-55, svmin=-80)
 ## -----------------------------------------------------------------------------
 plot_sv(Sv$data$`1000kHz`,gps=Sv$gps,cmaps="RdBu")
 
+## ----medianfilter-------------------------------------------------------------
+med3x3 = filter2d(data=Sv$data$`1000kHz`, 
+                  x=3,y=3, #set the x and y window size
+                  xval='Dive', #default is 'Dive' which is the name of the x axis variable
+                  yval='Depth_r',#default is 'Depth_r' which is the name of the y axis variable 
+                  val='Sv', #default is 'Sv' which is the name of the fill variable
+                  log=TRUE, #default is TRUE which means that the input variable is in log space
+                  fun = 'median') #the function to be computed
+plot_sv(med3x3, nam=paste(str_replace(mission,'_',' '), expression("- Median 3x3 ", Sv['1000kHz'])))
+
+## ----meanfilter---------------------------------------------------------------
+mean5x5 = filter2d(data=Sv$data$`1000kHz`, x=5,y=5,fun = 'mean')
+plot_sv(mean5x5, Sv$gps, nam=paste(str_replace(mission,'_',' '), expression("- Mean 5x5 ", Sv['1000kHz'])))
+
+## ----anomaly1-----------------------------------------------------------------
+ano1 = anomaly(Sv$data$`1000kHz`, fun='mean')
+#plotting the scaled anomaly
+plot_sv(ano1)
+#plotting the normal anomaly
+plot_sv(ano1, variable = 'SvAnomal')
+
+#if we want to apply another filter to the anomaly calculation it is recommended to set replace=TRUE, which replaces the Sv values with the variable v which can be set to be either SvAnomal or scaledAnomaly
+ano_re = anomaly(Sv$data$`1000kHz`, fun='mean', replace = TRUE, v='SvAnomal')
+ano_re_med = filter2d(ano_re,x=3,y=3,fun='median')
+plot_sv(ano_re_med, svmin = -10, svmax=10, nam=paste(str_replace(mission,'_',' '), expression("- Median 3x3 Anomaly", Sv['1000kHz'])))
+
 ## -----------------------------------------------------------------------------
 dvm = pdvm(Sv$data$`1000kHz`,
          vmin=-85,
@@ -75,8 +102,6 @@ dvm = pdvm(Sv$data$`1000kHz`,
 
 p=Sv$plots$`1000kHz`
 p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
-
-anomaly(Sv$data$`1000kHz`,'mean')
 
 ## ----get_ncpath---------------------------------------------------------------
 
@@ -181,4 +206,10 @@ plot_env(env,'fluo', 'Fluorescence', lims=c(100, 1500))
 #   l_fitLine() +
 #    l_ciLine(mul = 5, colour = "black", linetype = 2) +
 #    l_points(shape = 19, size = 1, alpha = 0.1) + theme_classic()
+
+## ----warning=FALSE------------------------------------------------------------
+roidir = roipath_from_csvpath(path)
+mission='PtSur_filament' 
+rois = get_roi_counts(roidir, mission)
+plot_roi(rois,roisel = c('ROI25','ROI75','ROI125','ROI200'), skipdive=41)
 

@@ -13,7 +13,8 @@ plot_sv(
   svmax = -45,
   deltamin = -10,
   deltamax = 10,
-  variable = NULL
+  variable = NULL,
+  nam = NULL
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ plot_sv(
 \item{deltamin}{minimum value for delta Sv, defaults to -10}
 
 \item{deltamax}{maximum value for delta Sv, defaults to +10}
+
+\item{nam}{character for legend title}
 
 \item{col}{color scheme for the day/night bar defaults to "Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"}
 }

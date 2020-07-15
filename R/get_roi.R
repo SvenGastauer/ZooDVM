@@ -21,7 +21,7 @@ get_roi_counts <- function(roidir, mission){
     mission = get_mission(roidir, ending='*.csv', patterns=NULL)[mission]
   }
     message(Sys.time(),': Selected mission - ',mission)
-  x=substr(mission,1,nchar(mission)-3);ending='.csv'
+  x=mission;ending='.csv'
   fn = list.files(roidir, pattern=glob2rx(paste0('*',x,'*')),full.names = TRUE)#, substr(mission, 1 , nchar(mission)-3),'*'))
 
   rois = data.frame(fread(fn), header = T)
@@ -68,16 +68,20 @@ plot_roi <- function(rois,roisel=NULL, skipdive=NULL,dres=1){
   plot_func <- function(df, name) {
     ggplot(data = df, aes(x = Dive, y = Depth_r, fill = value)) +
       geom_tile() +
-      xlab('Dive #')+
-      ylab('Depth [m]')+
+      xlab('')+
+      ylab('')+
       scale_y_reverse()+
       scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)), name=name)+
-      theme_classic()
+      theme_classic()+
+      theme(legend.text = element_text(size=10),
+            legend.title = element_text(size=10))
     }
 
   nested_rois <- roi_gg %>%
     group_by(variable) %>%
     nest() %>%
     mutate(plots = map2(data, variable, plot_func))
-  gridExtra::grid.arrange(grobs = nested_rois$plots)
+  gridExtra::grid.arrange(grobs = nested_rois$plots,
+                          bottom = "Dive #",
+                          left = "Depth [m]")
 }

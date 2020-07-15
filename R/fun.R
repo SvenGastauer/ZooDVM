@@ -43,6 +43,7 @@ get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta'), ending=
 #' @param svmax maximum value for Sv color, defaults to -45
 #' @param deltamin minimum value for delta Sv, defaults to -10
 #' @param deltamax maximum value for delta Sv, defaults to +10
+#' @param nam character for legend title
 #' @export
 #' @import ggplot2
 #' @author Sven Gastauer
@@ -50,12 +51,12 @@ get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta'), ending=
 plot_sv <- function(d1, gps=NULL,
                     cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"),
                     cmaps=c("RdYlBu",'RdBu'),
-                    svmin=-85,svmax=-45,deltamin=-10,deltamax=10, variable=NULL){
+                    svmin=-85,svmax=-45,deltamin=-10,deltamax=10, variable=NULL, nam=NULL){
   if (is.null(variable)){variable = unique(d1$variable)}else{vari=variable}
   if(variable %in% c('1000kHz','200kHz','Sv','TS')){
     lims=c(svmin,svmax); cmap = cmaps[1]
     vari='Sv'
-    nam = paste('Sv' , variable)
+    if(is.null(nam)){nam = paste(variable)}
     }else{
       if(variable == 'Scaled Anomaly'){
         if (deltamin < - 1){deltamin=-1}
@@ -63,20 +64,23 @@ plot_sv <- function(d1, gps=NULL,
         lims=c(deltamin,deltamax)
         cmap=cmaps[2]
         vari='scaledAnomaly'
-        nam = 'Scaled Anomaly'
+        if(is.null(nam)){nam = 'Scaled Anomaly'}
       }
       else{
         lims=c(deltamin,deltamax)
         cmap=cmaps[2]
         vari=variable
         if (variable == 'SvAnomal'){
-          nam = 'Sv Anomaly'
+          if(is.null(nam)){nam = 'Sv Anomaly'}
         }else{
           if(variable=='Delta'){
-            nam = 'Delta Sv'
+            if(is.null(nam)){nam = 'Delta Sv'}
             vari = 'Sv'
           }else{
-            nam= variable}}}
+            if(is.null(nam)){nam= variable}
+          }
+        }
+        }
       }
 
   p<-ggplot()+
