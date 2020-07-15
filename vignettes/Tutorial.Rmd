@@ -323,7 +323,7 @@ plot_env(env,'temp', 'Temperature')
 plot_env(env,'sal', 'Salinity')
 ```
 ```{r}
-plot_env(env,'fluo', 'Fluorescence', lims=c(100, 1500))
+plot_env(env,'fluo', 'Fluorescence', lims=c(0, 100))
 ```
 ## GAM for DVM vs environment
 
@@ -404,13 +404,19 @@ plot_env(env,'fluo', 'Fluorescence', lims=c(100, 1500))
   
 # Getting Zoocam ROIs size class info  
 
-```{r warning=FALSE}
+If the standard folder structure is maintained, the pdirectory contianing the roi information can be retrieved through `roipath_from_csvpath()`. ROI information can be read through `get_roi_counts(roidir, mission)` and the ROIS can then be plotted with `plot_roi(rois, roisel, skipdive,...)`:  
+```{r getrois, warning=FALSE}
 roidir = roipath_from_csvpath(path)
 mission='PtSur_filament' 
 rois = get_roi_counts(roidir, mission)
 plot_roi(rois,roisel = c('ROI25','ROI75','ROI125','ROI200'), skipdive=41)
 ```
 
+We could also just plot a selected ROI size:  
+
+```{r roisize, warning=FALSE}
+plot_roi(rois, roisel='ROI125')
+```
 # Getting Zoocam grayscale info  
 
 TBA
