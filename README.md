@@ -69,6 +69,9 @@ If you get a message such as:
 Install Rtools by downloading the required binary package from cran:  
 * [Windows users](https://cran.r-project.org/bin/windows/Rtools/)  
 
+### Rlang or other package that needs compiling fails  
+First check if a folder with the package name is within the R library folder (if the standard paths are used these are in ../Documents/R/r version number/package name) Manually remove the package if present. Whilst in the package library structure, also have a look for any folder named 00xxx and remove it manually. Now try reinstalling the package using install.packages('package name'). If it fails again, repeat the previous steps and make sure no 00xxx folders are within the R library folder.  
+
 ## Getting help  
 For ZooDVM specific questions make a feature request or post an issue on [GitHub](https://github.com/SvenGastauer/ZooDVM).    
 For general R questions visit [Stack Overflow](https://stackoverflow.com/questions/tagged/r).  
