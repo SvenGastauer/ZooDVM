@@ -72,11 +72,11 @@ med3x3 = filter2d(data=Sv$data$`1000kHz`,
                   val='Sv', #default is 'Sv' which is the name of the fill variable
                   log=TRUE, #default is TRUE which means that the input variable is in log space
                   fun = 'median') #the function to be computed
-plot_sv(med3x3, nam=paste(str_replace(mission,'_',' '), expression("- Median 3x3 ", Sv['1000kHz'])))
+plot_sv(med3x3, nam=paste(str_replace_all(mission,'_',' '), expression("- Median 3x3 ", Sv['1000kHz'])))
 
 ## ----meanfilter---------------------------------------------------------------
 mean5x5 = filter2d(data=Sv$data$`1000kHz`, x=5,y=5,fun = 'mean')
-plot_sv(mean5x5, Sv$gps, nam=paste(str_replace(mission,'_',' '), expression("- Mean 5x5 ", Sv['1000kHz'])))
+plot_sv(mean5x5, Sv$gps, nam=paste(str_replace_all(mission,'_',' '), expression("- Mean 5x5 ", Sv['1000kHz'])))
 
 ## ----anomaly1-----------------------------------------------------------------
 ano1 = anomaly(Sv$data$`1000kHz`, fun='mean')
@@ -88,7 +88,7 @@ plot_sv(ano1, variable = 'SvAnomal')
 #if we want to apply another filter to the anomaly calculation it is recommended to set replace=TRUE, which replaces the Sv values with the variable v which can be set to be either SvAnomal or scaledAnomaly
 ano_re = anomaly(Sv$data$`1000kHz`, fun='mean', replace = TRUE, v='SvAnomal')
 ano_re_med = filter2d(ano_re,x=3,y=3,fun='median')
-plot_sv(ano_re_med, svmin = -10, svmax=10, nam=paste(str_replace(mission,'_',' '), expression("- Median 3x3 Anomaly", Sv['1000kHz'])))
+plot_sv(ano_re_med, svmin = -10, svmax=10, nam=paste(str_replace_all(mission,'_',' '), expression("- Median 3x3 Anomaly", Sv['1000kHz'])))
 
 ## -----------------------------------------------------------------------------
 dvm = pdvm(Sv$data$`1000kHz`,
@@ -132,7 +132,26 @@ plot_env(env,'temp', 'Temperature')
 plot_env(env,'sal', 'Salinity')
 
 ## -----------------------------------------------------------------------------
-plot_env(env,'fluo', 'Fluorescence', lims=c(100, 1500))
+plot_env(env,'fluo', 'Fluorescence', lims=c(0, 1500))
+
+## ----clines-------------------------------------------------------------------
+clines=env %>%
+   group_by(Dive) %>%
+   summarise(thermo_c=thermocline(temp,Depth, tmax=NULL),
+             fluo_c=thermocline(fluo,Depth, tmax=500, tmin=10,r=5),
+             sal_c=thermocline(sal,Depth,r=5,tmin=33.4, tmax=34, cw='w'))
+
+## ----plot_thermoc-------------------------------------------------------------
+p<-ggplot()+geom_tile(data=env, aes(y=Depth_r, x=Dive, fill=temp))+
+   scale_y_reverse()+theme_classic()+
+   scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)))
+ p+geom_line(data.frame(clines),mapping=aes(x=Dive,y=thermo_c, color='Temperature'),size=1)+
+   geom_line(data.frame(clines),mapping=aes(x=Dive,y=fluo_c, color='Fluorescence'),size=1)+
+   geom_line(data.frame(clines),mapping=aes(x=Dive,y=sal_c, color='Salinity'),size=1)+
+   scale_color_manual(values = c('Temperature' = 'black',
+                                 'Fluorescence' = 'gray',
+                                 'Salinity' = 'darkgray'), name='')
+   
 
 ## -----------------------------------------------------------------------------
 # 
@@ -207,9 +226,12 @@ plot_env(env,'fluo', 'Fluorescence', lims=c(100, 1500))
 #    l_ciLine(mul = 5, colour = "black", linetype = 2) +
 #    l_points(shape = 19, size = 1, alpha = 0.1) + theme_classic()
 
-## ----warning=FALSE------------------------------------------------------------
+## ----getrois, warning=FALSE---------------------------------------------------
 roidir = roipath_from_csvpath(path)
 mission='PtSur_filament' 
 rois = get_roi_counts(roidir, mission)
 plot_roi(rois,roisel = c('ROI25','ROI75','ROI125','ROI200'), skipdive=41)
+
+## ----roisize, warning=FALSE---------------------------------------------------
+plot_roi(rois, roisel='ROI125')
 

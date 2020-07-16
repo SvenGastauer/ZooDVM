@@ -323,8 +323,30 @@ plot_env(env,'temp', 'Temperature')
 plot_env(env,'sal', 'Salinity')
 ```
 ```{r}
-plot_env(env,'fluo', 'Fluorescence', lims=c(0, 100))
+plot_env(env,'fluo', 'Fluorescence', lims=c(0, 1500))
 ```
+### Detecting thermoclines and other *clines  
+
+```{r clines}
+clines=env %>%
+   group_by(Dive) %>%
+   summarise(thermo_c=thermocline(temp,Depth, tmax=NULL),
+             fluo_c=thermocline(fluo,Depth, tmax=500, tmin=10,r=5),
+             sal_c=thermocline(sal,Depth,r=5,tmin=33.4, tmax=34, cw='w'))
+```
+```{r plot_thermoc}
+p<-ggplot()+geom_tile(data=env, aes(y=Depth_r, x=Dive, fill=temp))+
+   scale_y_reverse()+theme_classic()+
+   scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)))
+ p+geom_line(data.frame(clines),mapping=aes(x=Dive,y=thermo_c, color='Temperature'),size=1)+
+   geom_line(data.frame(clines),mapping=aes(x=Dive,y=fluo_c, color='Fluorescence'),size=1)+
+   geom_line(data.frame(clines),mapping=aes(x=Dive,y=sal_c, color='Salinity'),size=1)+
+   scale_color_manual(values = c('Temperature' = 'black',
+                                 'Fluorescence' = 'gray',
+                                 'Salinity' = 'darkgray'), name='')
+   
+```
+
 ## GAM for DVM vs environment
 
 ```{r}
