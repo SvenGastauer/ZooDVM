@@ -14,7 +14,7 @@ roipath_from_csvpath <-function(csvpath){
 #' @param mission numeric or character, pointing to the filename to be considered
 #' @import data.table
 #' @export
-#' @returndataframe contiaining the ROI counts for each Dive and Depth interval
+#' @return dataframe contiaining the ROI counts for each Dive and Depth interval
 get_roi_counts <- function(roidir, mission){
   require(data.table)
   if (is.numeric(mission)){

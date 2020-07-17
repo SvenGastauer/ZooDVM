@@ -34,7 +34,7 @@ Zooglider is equipped with the Zonar system. The Zonar system consists of two si
 Typical acoustic echogram visualizations, generally involve a time component on the x-axis and a depth or range component on the y-axis. The fill values are often expressed as Scattering volume (*Sv*) or Target Strength (*TS*), which are metrics that can be derived from the raw Zonar count data.  
 
 First the data point depth is computed:  
-We can calculated the distance fro the transducer of the first sampling point ($z_0$)as:
+We can calculated the distance from the transducer of the first sampling point ($z_0$)as:
 $$z_0=(t_b + \frac{\tau}{2}) \frac{c}{2 * 1000} $$
 where $t_b$ is the blanking time (typically 1) in ms, $\tau$ is the pulse duration in ms and $c$ is the sound speed in $ms^{-1}$. Now we can compute the distance from the transducer face of each sampling point ($d_z$) with $d_t$ the sampling interval in ms as:  
 $$d_z = n_{scan}*\frac{c}{2 * 1000}*d_t * 0.001 + z_0 $$
@@ -62,7 +62,7 @@ with $d_c$ the measurement range and $\alpha_c$ the absorption coefficient given
 
 ## Calibration  
 
-Calibration is executed, largely following calibration procedures described by Demer et al [-@demer_calibration_2015], using a 10 mm tungsten carbide sphere. Calibration is completed on a regular basis in a purpose build pool. For the purpose of the calibration, the transducers are dismounted from the glider and mounted on a plate. The transducer is driven by a connected laptop. The position of the transducer can be adjusted vertically and it can be rotated. A 10 mm sphere with expected $TS_0$ in calibration conditions of -53.47 dB at 200 kHz and -50.92 at 1000 kHz is suspended at a distance of 5 m form the transducer face. Through systematic vertical movement and rotation, beam mapping can be achieved. On-axis calibraiton is then executed at the vertical position and the rotation, where the maximum backscatter was recorded.  
+Calibration is executed, largely following calibration procedures described by Demer et al [-@demer_calibration_2015], using a 10 mm tungsten carbide sphere. Calibration is completed on a regular basis in a purpose build pool. For the purpose of the calibration, the transducers are dismounted from the glider and mounted on a plate. The transducer is driven by a connected laptop. The position of the transducer can be adjusted vertically and it can be rotated. A 10 mm sphere with expected $TS_0$ in calibration conditions of -53.47 dB at 200 kHz and -50.92 at 1000 kHz is suspended at a distance of 5 m from the transducer face. Through systematic vertical movement and rotation, beam mapping can be achieved. On-axis calibraiton is then executed at the vertical position and the rotation, where the maximum backscatter was recorded.  
 $TS_0$ expressed in in raw acoustic dB values ($TS_c$) becomes:  
 $$TS_c = TS_0 + SL - 40log_{10}(d_c) - 2\alpha_c$$
 The on-axis calibration gain can be approximated as:

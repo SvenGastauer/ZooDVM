@@ -1,5 +1,5 @@
 #' Get acoustic calibration information from netCDF file
-#' @description
+#' @description Get acoustic calibraiton data from netCCDF
 #' @param ncpath folder that contains the netCDF files
 #' @param mission name or index number of the mission to be used
 #' @export
