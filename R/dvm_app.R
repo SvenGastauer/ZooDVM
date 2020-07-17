@@ -18,8 +18,8 @@ dvm_app <- function() {
         sidebarPanel(
           tabsetPanel(
             tabPanel("Mission Settings",
-                     selectInput('miss','Select mission',mm$missions),
-                     selectInput('svvar','Sv variable',names(Sv$data)),
+                     selectInput('miss','Select mission','Mission'),
+                     selectInput('svvar','Sv variable','Sv'),#names(Sv$data)),
                      hr()),
             tabPanel('DVM settings',
                      sliderInput("Svrange", label = ("Sv Range"), min = -95, max = -20, value = c(-85, -45)),
@@ -58,6 +58,20 @@ dvm_app <- function() {
 
 
     server = function(session, input, output) {
+
+      observeEvent(input$pathIn,{
+        print(input$pathIn)
+        mission = ZooDVM::get_mission(input$pathIn)
+        print(mission$missions)
+        updateSelectInput(session, "miss",#label='sdfdsfdsf')
+                          choices = mission$missions,
+                          selected = mission$missions[1])
+        Sv = get_sv(input$pathIn,1)
+         updateSelectInput(session, "svvar",#label='sdfdsfdsf')
+                           choices = names(Sv$data),
+                           selected=names(Sv$data)[1])
+      })
+
       #filter buttons
       observeEvent(input$addRun, {
         task = paste0("filter2d(Svval, x=",input$xwin,", y=",input$ywin,
@@ -79,58 +93,69 @@ dvm_app <- function() {
 
       #process Sv
       sv_proc <- reactive({
-        Sv = get_sv(input$pathIn,input$miss)
-        Svval = Sv$data[input$svvar][[1]]
+        if(input$miss != 'Mission'){
+          Sv = get_sv(input$pathIn,input$miss)
+          print('got Sv')
+          Svval = Sv$data[input$svvar][[1]]
+          print('svval is there')
 
-        if (input$filterlist %ni% c('None','') ){
-          funs = strsplit(input$filterlist,';\n')
-          for(f in funs[[1]]){
-            print(f)
-            Svval = eval(parse(text=f))
+          if (input$filterlist %ni% c('None','') ){
+            funs = strsplit(input$filterlist,';\n')
+            for(f in funs[[1]]){
+              print(f)
+              Svval = eval(parse(text=f))
+            }
           }
+          print('no filter')
+          updateSliderInput(session, "Svrange", #value = c(floor(min(na.omit(Svval$Sv))),ceiling(max(na.omit(Svval$Sv)))),
+                            min = floor(min(na.omit(Svval$Sv))),
+                            max = ceiling(max(na.omit(Svval$Sv))),
+                            step = 0.1)
+          return(list(Svval, Sv$gps))
         }
-        updateSliderInput(session, "Svrange", #value = c(floor(min(na.omit(Svval$Sv))),ceiling(max(na.omit(Svval$Sv)))),
-                          min = floor(min(na.omit(Svval$Sv))),
-                          max = ceiling(max(na.omit(Svval$Sv))),
-                          step = 0.1)
-
-        return(list(Svval, Sv$gps))
       })
 
       #get dvm
       dvm <- reactive({
-
+        print('getting dvm')
         if (input$freeze==FALSE){
-        Svval=sv_proc()[[1]]
-        dvmdat <<- pdvm(ac_group=Svval,
-                   vmin=as.numeric(input$Svrange[1]),
-                   vmax=as.numeric(input$Svrange[2]),
-                   perc=as.numeric(input$perc),
-                   dcut=as.numeric(input$dcut),
-                   scut=as.numeric(input$scut),
-                   dskip=as.numeric(input$dskip),
-                   dend=as.numeric(input$dend),
-                   updown=input$updown)
-        }
+            print('no freezing')
+          Svval=sv_proc()[[1]]
+          print('got it again')
+          dvmdat <- pdvm(ac_group=Svval,
+                     vmin=as.numeric(input$Svrange[1]),
+                     vmax=as.numeric(input$Svrange[2]),
+                     perc=as.numeric(input$perc),
+                     dcut=as.numeric(input$dcut),
+                     scut=as.numeric(input$scut),
+                     dskip=as.numeric(input$dskip),
+                     dend=as.numeric(input$dend),
+                     updown=input$updown)
+          }
 
 
-        return(list(dvmdat))
+          return(list(dvmdat))
+
       })
 
       output$svplot <- renderPlot({
+        print('getting plot')
         sv = sv_proc()
+        print('got sv')
         Sv = sv[[1]]
         gps = sv[[2]]
-        if(input$freeze==FALSE){dvm = dvmdat}
+        dvm=dvm()[[1]]
+        if(input$freeze==FALSE){dvm =dvm=dvm()[[1]]}
         #print(Sv[[1]])
         p=plot_sv(Sv,gps,svmin=input$Svrange[1], svmax=input$Svrange[2], variable='Sv')
 
-        p<-p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+        p<-p+geom_line(data=dvm, aes(x=Dive, y=Depth_r),size=1)
         p
       })
 
     output$dplot <- renderPlot({
       #dvmdat = dvmdat
+      dvmdat = dvm()[[1]]#sv_proc[[1]]
       ggplot(data=dvmdat, aes(x=sun,y=Depth_r))+
         xlab('Dive #')+ylab('Depth [m]')+
         geom_point()+theme_classic()+
