@@ -22,15 +22,19 @@
 #'
 thermocline = function(temps, depths, tmax=NULL, tmin=NULL, pac=0.05, r=1, cw='c', dmax=NULL, dmin=NULL){
   #set tmax
+  depths = depths[!is.na(temps)]
+  temps = temps[!is.na(temps)]
+  temps =  temps[!is.na(depths)]
+
   if(!is.null(tmax)){temps[temps>=tmax] = tmax}
   if(!is.null(tmin)){temps[temps<=tmin] = tmin}
   if(!is.null(dmax)){
-    depths = depths[depths<=dmax]
     temps=temps[depths<=dmax]
+    depths = depths[depths<=dmax]
   }
   if(!is.null(dmin)){
-    depths = depths[depths>=dmin]
     temps=temps[depths>=dmin]
+    depths = depths[depths>=dmin]
   }else{dmin=0}
   #Get slopes
   slopes = diff(zoo::rollmedian(temps,r))/diff(zoo::rollmedian(depths,r))
@@ -43,7 +47,7 @@ thermocline = function(temps, depths, tmax=NULL, tmin=NULL, pac=0.05, r=1, cw='c
     }
   }
   slopes <- abs(slopes)
-  inds <- which(slopes < (max(slopes)*(1+pac)) & slopes > (max(slopes)*(1-pac)))
+  inds <- which(slopes < (max(slopes[is.finite(slopes)])*(1+pac)) & slopes > (max(slopes[is.finite(slopes)])*(1-pac)))
 
   if(length(inds)>0){
     return(zoo::rollmedian(depths,r)[inds[1]])

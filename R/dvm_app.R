@@ -60,9 +60,9 @@ dvm_app <- function() {
     server = function(session, input, output) {
 
       observeEvent(input$pathIn,{
-        print(input$pathIn)
+        #print(input$pathIn)
         mission = ZooDVM::get_mission(input$pathIn)
-        print(mission$missions)
+        #print(mission$missions)
         updateSelectInput(session, "miss",#label='sdfdsfdsf')
                           choices = mission$missions,
                           selected = mission$missions[1])
@@ -95,18 +95,18 @@ dvm_app <- function() {
       sv_proc <- reactive({
         if(input$miss != 'Mission'){
           Sv = get_sv(input$pathIn,input$miss)
-          print('got Sv')
+          #print('got Sv')
           Svval = Sv$data[input$svvar][[1]]
-          print('svval is there')
+          #print('svval is there')
 
           if (input$filterlist %ni% c('None','') ){
             funs = strsplit(input$filterlist,';\n')
             for(f in funs[[1]]){
-              print(f)
+              #print(f)
               Svval = eval(parse(text=f))
             }
           }
-          print('no filter')
+          #print('no filter')
           updateSliderInput(session, "Svrange", #value = c(floor(min(na.omit(Svval$Sv))),ceiling(max(na.omit(Svval$Sv)))),
                             min = floor(min(na.omit(Svval$Sv))),
                             max = ceiling(max(na.omit(Svval$Sv))),
@@ -117,11 +117,11 @@ dvm_app <- function() {
 
       #get dvm
       dvm <- reactive({
-        print('getting dvm')
+        #print('getting dvm')
         if (input$freeze==FALSE){
-            print('no freezing')
+            #print('no freezing')
           Svval=sv_proc()[[1]]
-          print('got it again')
+          #print('got it again')
           dvmdat <- pdvm(ac_group=Svval,
                      vmin=as.numeric(input$Svrange[1]),
                      vmax=as.numeric(input$Svrange[2]),
@@ -139,9 +139,9 @@ dvm_app <- function() {
       })
 
       output$svplot <- renderPlot({
-        print('getting plot')
+        #print('getting plot')
         sv = sv_proc()
-        print('got sv')
+        #print('got sv')
         Sv = sv[[1]]
         gps = sv[[2]]
         dvm=dvm()[[1]]
