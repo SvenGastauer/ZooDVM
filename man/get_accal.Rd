@@ -15,7 +15,7 @@ get_accal(ncpath, mission)
 dataframe containing  acoustic calibraiton information
 }
 \description{
-Get acoustic calibration information from netCDF file
+Get acoustic calibraiton data from netCCDF
 }
 \author{
 Sven Gastauer

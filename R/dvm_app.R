@@ -41,9 +41,13 @@ dvm_app <- function() {
                    shiny::actionButton('addRun','Add'),
                    hr(),
                    h3('Anomality'),
-                   selectInput('funcAn','Background FUnction', c('mean','median','max','min')),
+                   selectInput('funcAn','Background Function', c('mean','median','max','min')),
                    radioButtons('rfscale','Scaled values', c('Normal','scaled')),
                    shiny::actionButton('addAn','Add'),
+                   hr(),
+                   h3('Day vs Night'),
+                   selectInput('dn','Function',c('mean','median')),
+                   shiny::actionButton('addDn','Add'),
                    hr(),
                    textAreaInput("filterlist", "Filter list", "None"),
                    )
@@ -85,6 +89,14 @@ dvm_app <- function() {
       observeEvent(input$addAn, {
         v=if(input$rfscale == 'Normal'){'SvAnomal'}else{'scaledAnomaly'}
         task = paste0("anomaly(Svval, fun='",input$funcAn,"', replace=TRUE,v='", v,"')") #Svval$Sv = Svval[,'",v,"']")
+        if(input$filterlist %ni% c('None','') ){
+          task = paste(input$filterlist,task, sep=';\n')
+        }
+        updateTextAreaInput(session, "filterlist", value = task)
+      })
+
+      observeEvent(input$addDn, {
+        task = paste0("get_daydiff(Svval, fun='",input$dn,"', replace=TRUE)") #Svval$Sv = Svval[,'",v,"']")
         if(input$filterlist %ni% c('None','') ){
           task = paste(input$filterlist,task, sep=';\n')
         }

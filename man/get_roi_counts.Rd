@@ -11,6 +11,9 @@ get_roi_counts(roidir, mission)
 
 \item{mission}{numeric or character, pointing to the filename to be considered}
 }
+\value{
+dataframe contiaining the ROI counts for each Dive and Depth interval
+}
 \description{
 Gets the ROI counts for a given mission
 }

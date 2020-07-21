@@ -144,14 +144,25 @@ clines=env %>%
 ## ----plot_thermoc-------------------------------------------------------------
 p<-ggplot()+geom_tile(data=env, aes(y=Depth_r, x=Dive, fill=temp))+
    scale_y_reverse()+theme_classic()+
-   scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)))
+   scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)))+xlab('Dive #')+ylab('Depth [m]')
  p+geom_line(data.frame(clines),mapping=aes(x=Dive,y=thermo_c, color='Temperature'),size=1)+
    geom_line(data.frame(clines),mapping=aes(x=Dive,y=fluo_c, color='Fluorescence'),size=1)+
    geom_line(data.frame(clines),mapping=aes(x=Dive,y=sal_c, color='Salinity'),size=1)+
    scale_color_manual(values = c('Temperature' = 'black',
                                  'Fluorescence' = 'gray',
                                  'Salinity' = 'darkgray'), name='')
-   
+ 
+
+## -----------------------------------------------------------------------------
+p<-ggplot()+geom_tile(data=Sv$data$`1000kHz`, aes(y=Depth_r, x=Dive, fill=Sv))+
+   scale_y_reverse()+theme_classic()+
+   scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)), na.value='transparent')+xlab('Dive #')+ylab('Depth [m]')
+ p+geom_line(data.frame(clines),mapping=aes(x=Dive,y=thermo_c, color='Temperature'),size=1)+
+   geom_line(data.frame(clines),mapping=aes(x=Dive,y=fluo_c, color='Fluorescence'),size=1)+
+   geom_line(data.frame(clines),mapping=aes(x=Dive,y=sal_c, color='Salinity'),size=1)+
+   scale_color_manual(values = c('Temperature' = 'black',
+                                 'Fluorescence' = 'darkgray',
+                                 'Salinity' = 'blue'), name='')
 
 ## -----------------------------------------------------------------------------
 # 
