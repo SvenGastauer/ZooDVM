@@ -288,7 +288,7 @@ ncpath = ncpath_from_csvpath(path)
 With ZooDVM we can easily access the acoustic calibraiton information used to calculate Sv:
 ```{r}
 calinfo = get_accal(ncpath, sel)
-kable(calinfo)
+knitr::kable(calinfo)
 ```
   
 ## Getting GPS info from netCDF file

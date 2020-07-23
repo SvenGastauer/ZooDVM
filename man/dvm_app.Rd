@@ -4,7 +4,7 @@
 \alias{dvm_app}
 \title{Shiny App to detect DVM}
 \usage{
-dvm_app()
+dvm_app(path = NULL)
 }
 \arguments{
 \item{path}{Path to the ZOnar csv files}

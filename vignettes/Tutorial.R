@@ -109,7 +109,7 @@ ncpath = ncpath_from_csvpath(path)
 
 ## -----------------------------------------------------------------------------
 calinfo = get_accal(ncpath, sel)
-kable(calinfo)
+knitr::kable(calinfo)
 
 ## ----get_gps------------------------------------------------------------------
 sel = 15 #selected mission

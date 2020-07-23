@@ -9,8 +9,11 @@
 #' path='Z:/zonar_sven/zonar/data/csv_zonar'
 #' dvm_app(path)
 
-dvm_app <- function() {
+dvm_app <- function(path=NULL) {
+  if(is.null(path)){path = "Z:\\zonar_sven\\zonar\\data\\csv_zonar\\"}
+
   '%ni%' <- Negate('%in%')
+
   require(shiny)
   shinyApp(
     ui = fluidPage(
@@ -54,7 +57,7 @@ dvm_app <- function() {
           )),
 
         mainPanel(
-          textInput("pathIn", "Path", "C:/Users/sven/Documents/Zonar/data/csv_zonar/"),#"Z:\\zonar_sven\\zonar\\data\\csv_zonar\\"),
+          textInput("pathIn", "Path", path),
 
           plotOutput("svplot"),
           plotOutput("dplot"))

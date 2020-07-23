@@ -1,0 +1,64 @@
+---
+title: "Pt Sur filament"
+author: "Sven Gastauer"
+date: "21/07/2020"
+output: html_document
+---
+
+## Detect DVM
+
+```{r warning=FALSE, message=FALSE}
+library(ZooDVM)
+path = 'C:\\Users\\sven\\Documents\\Zonar\\data\\csv_zonar\\'
+mm = get_mission(path)
+sel=15
+mm$missions[sel]
+Sv = get_sv(path,sel)
+data = Sv$data$`1000kHz`
+Sv1000 = filter2d(data, x=3, y=3, xval='Dive',yval='Depth_r', val='Sv', log=TRUE,fun='median');
+Sv1000 = get_daydiff(Sv1000, fun='mean', replace=TRUE)
+dvm = pdvm(Sv1000,
+         vmin=-85,
+         vmax=-65,
+         perc=35,
+         dcut=300,
+         scut=0, 
+         dskip=7,
+         dend=0,
+         updown='bottom')
+
+p=plot_sv(data, gps=Sv$gps)
+p+geom_line(data=dvm, aes(x=Dive, y=Depth),size=1)
+
+```
+
+## Sv mean
+
+```{r warning=FALSE, message=FALSE}
+plot_sv(Sv1000,variable='Svmean', deltamin = -80, deltamax=-50, cmap=c('','RdYlBu'), gps=Sv$gps)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r warning=FALSE, message=FALSE}
+library(oce)
+env = get_env(ncpath_from_csvpath(path), 15)
+data <- left_join(data, env)
+data$spice <- oce::swSpice(data$sal,data$temp,data$Depth_r,data$Lon_start,data$Lat_start)
+plot_env(data, 'spice')
+```
+
+```{r}
+gray <- read_csv('C:\\Users\\sven\\Documents\\Zonar\\data\\gray\\LJ.csv')
+gray$dive = as.numeric(substr(gray$dive_number,2,nchar(gray$dive_number)))
+gray$depth_r = round(gray$pressure_dbar)
+gray_sum=gray%>%group_by(dive,depth_r)%>%summarise(gray=median(gray_val))
+gray_sum$relgray = gray_sum$gray - 230 
+ggplot(data=gray_sum, aes(x=dive, y=depth_r, fill=relgray))+
+  geom_tile()+
+  scale_y_reverse()+
+  theme_classic()+
+  scale_fill_gradientn(colours = rev(pals::brewer.rdylbu(15)))
+```
