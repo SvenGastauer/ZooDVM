@@ -1,5 +1,12 @@
 #' Get thermocline or another *cline
-#' @description Computes slopes (m_x) between each input value pair as \deqn{ m_x = \frac{temp_{x+1} - temp_x}{depth_{x+1} - depth_x}}{% Slopes in positive or negative direction or in a single direction can be considered.\cr A threshold range around the maximum slope can be defined. \cr Rolling median values can be used to minimze the influence from few outliers.\cr Maximum or minimum values as well as depths to be considered can be defined
+#' @description{Computes slopes (m_x) between each input value pair as
+#' \deqn{ m_x = \frac{temp_{x+1} - temp_x}{depth_{x+1} - depth_x}}{%
+#' m_x = (temp_[x+1] - temp_x) / (depth_[x+1] - depth_x)}
+#' The maximum slope (max([m_1,...m_n])) is assumed to represent a thermocline. \cr
+#' Slopes in positive or negative direction or in a single direction can be considered.\cr
+#' A threshold range around the maximum slope can be defined. \cr
+#' Rolling median values can be used to minimze the influence from few outliers.\cr
+#' Maximum or minimum values as well as depths to be considered can be defined}
 #' @param temps array of temperatures, must be the same length ans depths
 #' @param depths array of depths, must be the same length as temps
 #' @param tmax set a maximum value to be considered, all values above this threshold will be set to tmax, NULL for no maximum, defaults NULL
