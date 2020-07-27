@@ -52,7 +52,7 @@ get_roi_counts <- function(roidir, mission){
 #' @author Sven Gastauer
 #' @return ROI plots
 
-plot_roi <- function(rois,roisel=NULL, skipdive=NULL,dres=1){
+plot_roi <- function(rois,roisel=NULL, skipdive=NULL,dres=1,vmin=NULL, vmax=NULL){
   rois$Depth_r = round(rois$Pressure/dres)*dres
 
   roinames = names(rois)[grepl('ROI',names(rois))]
@@ -65,13 +65,20 @@ plot_roi <- function(rois,roisel=NULL, skipdive=NULL,dres=1){
   roi_gg = roi_gg[roi_gg$variable %in% roisel,]
   roi_gg = roi_gg[!(roi_gg$Dive %in% skipdive),]
 
-  plot_func <- function(df, name) {
+  plot_func <- function(df, name,vmin=NULL, vmax=NULL) {
+    if(is.null(vmin)){
+      vmin = min(na.omit(df[,'value']))
+    }
+    if(is.null(vmax)){
+      vmax = max(na.omit(df[,'value']))
+    }
+
     ggplot(data = df, aes(x = Dive, y = Depth_r, fill = value)) +
       geom_tile() +
       xlab('')+
       ylab('')+
       scale_y_reverse()+
-      scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)), name=name)+
+      scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(15)), name=name, limits=c(vmin, vmax), oob=scales::squish)+
       theme_classic()+
       theme(legend.text = element_text(size=10),
             legend.title = element_text(size=10))
@@ -80,8 +87,35 @@ plot_roi <- function(rois,roisel=NULL, skipdive=NULL,dres=1){
   nested_rois <- roi_gg %>%
     group_by(variable) %>%
     nest() %>%
-    mutate(plots = map2(data, variable, plot_func))
+    mutate(plots = map2(data, variable,vmin=eval(vmin),vmax=eval(vmax), plot_func))
   gridExtra::grid.arrange(grobs = nested_rois$plots,
                           bottom = "Dive #",
                           left = "Depth [m]")
 }
+
+#' Joins acoustic Sv data with ROI counts
+#' @param  Sv Sv data list
+#' @param rois rois dataframe
+#' @export
+#' @return combined dataframe
+#'
+join_ac_roi <- function(Sv, rois){
+  #combine ROI and Acoustics
+
+  rois$Depth_r = round(rois$Pressure)
+
+  selr = names(rois)[grep('ROI*',names(rois) )]
+
+  subroi = rois%>%group_by(Dive, Depth_r)%>%summarise_at(selr,.funs=sum)
+
+  jac = full_join(Sv$data[[1]],subroi)
+  names(jac)[names(jac)=='Sv'] = paste0('Sv', names(Sv$data)[1])
+  if (length(Sv$data)>1){
+    for(i in seq(2,length(Sv$data))){
+      jac = full_join(jac,Sv$data[[i]][,c('Dive','Depth_r','Sv')])
+      names(jac)[names(jac)=='Sv'] = paste0('Sv', names(Sv$data)[i])
+    }
+  }
+  return(jac)
+}
+

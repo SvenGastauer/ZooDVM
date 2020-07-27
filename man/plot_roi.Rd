@@ -4,7 +4,14 @@
 \alias{plot_roi}
 \title{Plots ROI data in a grid}
 \usage{
-plot_roi(rois, roisel = NULL, skipdive = NULL, dres = 1)
+plot_roi(
+  rois,
+  roisel = NULL,
+  skipdive = NULL,
+  dres = 1,
+  vmin = NULL,
+  vmax = NULL
+)
 }
 \arguments{
 \item{rois}{dataframe contianing the roi information}

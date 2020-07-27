@@ -19,7 +19,11 @@ Depends:
 	tidyverse,
 	pals,
 	gridExtra,
-	shiny
+	shiny,
+	rpart,
+	mgcv,
+	mgcViz,
+	rpart.plot
 Suggests: knitr, rmarkdown
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
