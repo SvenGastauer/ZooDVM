@@ -117,6 +117,8 @@ sub = sub[sub$Count>0,]
   print(p)
   
 ```
+
+
 Now we can have a look at joined gams or regression trees for example to better understand the relationship between the ROIs and the acoustic data.  
 
 THis is not necessarily the best example but it is an analysis for each ROI size class during the day, with a smoother function for Sv 200 kHz, Sv 1000 kHz and an interaction term:  
@@ -144,6 +146,30 @@ for(v in c('ROI25','ROI45','ROI75','ROI125','ROI200')){
 
 ```
 
+Or we look at it from another perspective:  
+
+```{r message=FALSE,results="asis", warning=FALSE}
+#make gams and plots
+
+#set depth cut value
+dcut=200
+#select daytime to analyze:
+daytime = 'Day' 
+rvars =c('ROI25','ROI45','ROI75','ROI125','ROI200')
+#loop through the different ROIs
+for(v in c('Sv200kHz','Sv1000kHz','SvDelta')){
+    cat("  ###",  v," for ", daytime,"  ")
+
+  g1 =mgcv::gam(data=acroi[acroi$Depth<dcut & acroi$sun==daytime,],eval(parse(text=v))~s(ROI25)+s(ROI200)+s(ROI25, ROI200)+s(ROI25, ROI125)+s(ROI25, ROI75)+s(ROI75, ROI200))
+  summary(g1)
+  
+  b <- getViz(g1)
+  print(plot(b, allTerms = T) +  l_fitRaster() + l_fitContour() + l_points(alpha=0.2)+ l_fitLine(linetype = 1, size=1.2) + l_fitContour() + 
+          l_ciLine(colour = 2) +
+          scale_fill_gradientn(colors=rev(pals::brewer.rdylbu(12)) , na.value='transparent',oob=scales::squish)+theme_classic(), pages = 1)
+}
+
+```
 Similiarly we can look at regression trees to get a best classifier. Here an example for ROI 25:  
 
 
