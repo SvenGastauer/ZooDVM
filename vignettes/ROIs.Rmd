@@ -29,8 +29,10 @@ library(mgcv)
 library(rpart)
 library(rpart.plot)
 
-datadir <-'C:\\Users\\sven\\Documents\\Zonar\\data\\csv_zonar\\'
-roidir <- 'C:\\Users\\sven\\Documents\\Zonar\\data\\csv_zc_roi\\'
+bdir = 'Z:\\zonar_sven\\zonar\\data\\'
+
+datadir <-paste0(bdir, 'csv_zonar\\')
+roidir <- paste0(bdir, 'csv_zc_roi\\')
 
 ```
 

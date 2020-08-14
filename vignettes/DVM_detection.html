@@ -332,30 +332,50 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 <p>This is just a brief view of the DVM for the different missions. THis document illustrates how we can tune the detection and visualize the DVM on the echograms.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># v = names(out$data)[2]</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="co"># dvm200 = pdvm(ac_group=out$data[v][[1]],</span></span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="co">#          vmin=-85,</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a><span class="co">#          vmax=-70,</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a><span class="co">#          perc=62,</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a><span class="co">#          dcut=350,scut=10, dskip=6,dend=5)</span></span>
-<span id="cb1-7"><a href="#cb1-7"></a><span class="co"># </span></span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># p=out$plots[v][[1]]</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a><span class="co"># p=p+geom_line(data=dvm200, aes(x=Dive, y=Depth),size=1)</span></span>
-<span id="cb1-10"><a href="#cb1-10"></a><span class="co"># print(p)</span></span>
-<span id="cb1-11"><a href="#cb1-11"></a><span class="co"># dvmsum200_1 = dvmsum(dvm200)</span></span>
-<span id="cb1-12"><a href="#cb1-12"></a><span class="co"># </span></span>
-<span id="cb1-13"><a href="#cb1-13"></a><span class="co"># out$plots[names(out$data)[3]][[1]]</span></span>
-<span id="cb1-14"><a href="#cb1-14"></a><span class="co"># cat(&quot;  \n&quot;)</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>  <span class="co"># ggplot(data=dvmsum, aes(x=sun,y=Depth))+</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>  <span class="co">#   geom_point()+scale_y_reverse()+</span></span>
-<span id="cb2-3"><a href="#cb2-3"></a>  <span class="co">#   geom_line(group=1)+</span></span>
-<span id="cb2-4"><a href="#cb2-4"></a>  <span class="co">#   geom_line(data=dvmsum, aes(x=sun, y=dpsd,group=1),lty=2)+</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>  <span class="co">#   geom_line(data=dvmsum, aes(x=sun, y=dmsd,group=1),lty=2)+</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>  <span class="co">#   xlab(&#39;&#39;)+</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="co">#   ylab(&#39;Depth[m]&#39;)+</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  <span class="co">#   theme_classic()+</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="co">#   theme(text=element_text(size=16))</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="co"># </span></span></code></pre></div>
+<pre><code>## Warning: replacing previous import &#39;data.table::last&#39; by &#39;dplyr::last&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;data.table::first&#39; by &#39;dplyr::first&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;data.table::between&#39; by &#39;dplyr::between&#39;
+## when loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;dplyr::combine&#39; by &#39;gridExtra::combine&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;dplyr::select&#39; by &#39;raster::select&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;dplyr::intersect&#39; by &#39;raster::intersect&#39;
+## when loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;marmap::as.raster&#39; by &#39;raster::as.raster&#39;
+## when loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;dplyr::union&#39; by &#39;raster::union&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;data.table::shift&#39; by &#39;raster::shift&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<pre><code>## Warning: replacing previous import &#39;raster::extract&#39; by &#39;tidyr::extract&#39; when
+## loading &#39;ZooDVM&#39;</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># v = names(out$data)[2]</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="co"># dvm200 = pdvm(ac_group=out$data[v][[1]],</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="co">#          vmin=-85,</span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="co">#          vmax=-70,</span></span>
+<span id="cb11-5"><a href="#cb11-5"></a><span class="co">#          perc=62,</span></span>
+<span id="cb11-6"><a href="#cb11-6"></a><span class="co">#          dcut=350,scut=10, dskip=6,dend=5)</span></span>
+<span id="cb11-7"><a href="#cb11-7"></a><span class="co"># </span></span>
+<span id="cb11-8"><a href="#cb11-8"></a><span class="co"># p=out$plots[v][[1]]</span></span>
+<span id="cb11-9"><a href="#cb11-9"></a><span class="co"># p=p+geom_line(data=dvm200, aes(x=Dive, y=Depth),size=1)</span></span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="co"># print(p)</span></span>
+<span id="cb11-11"><a href="#cb11-11"></a><span class="co"># dvmsum200_1 = dvmsum(dvm200)</span></span>
+<span id="cb11-12"><a href="#cb11-12"></a><span class="co"># </span></span>
+<span id="cb11-13"><a href="#cb11-13"></a><span class="co"># out$plots[names(out$data)[3]][[1]]</span></span>
+<span id="cb11-14"><a href="#cb11-14"></a><span class="co"># cat(&quot;  \n&quot;)</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>  <span class="co"># ggplot(data=dvmsum, aes(x=sun,y=Depth))+</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>  <span class="co">#   geom_point()+scale_y_reverse()+</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="co">#   geom_line(group=1)+</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="co">#   geom_line(data=dvmsum, aes(x=sun, y=dpsd,group=1),lty=2)+</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>  <span class="co">#   geom_line(data=dvmsum, aes(x=sun, y=dmsd,group=1),lty=2)+</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>  <span class="co">#   xlab(&#39;&#39;)+</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a>  <span class="co">#   ylab(&#39;Depth[m]&#39;)+</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>  <span class="co">#   theme_classic()+</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a>  <span class="co">#   theme(text=element_text(size=16))</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a>  <span class="co"># </span></span></code></pre></div>
 
 
 
