@@ -2,3 +2,6 @@ packrat/lib*/
 .Rproj.user
 doc
 Meta
+*.csv
+.RData
+.Rhistory

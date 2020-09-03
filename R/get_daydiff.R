@@ -7,8 +7,8 @@
 #' @export
 #' @import dplyr
 #'
-get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=FALSE){
-  data$date = as.numeric(format(as.Date(data$Time_start), "%j"))
+get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=FALSE, date_var='Time_start'){
+  data$date = as.numeric(format(as.Date(data[,date_var]), "%j"))
   sun = data$sun
   night = data[data$sun == 'Night',]
   day = data[data$sun == 'Day',]
