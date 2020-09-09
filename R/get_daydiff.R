@@ -7,11 +7,13 @@
 #' @export
 #' @import dplyr
 #'
-get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=FALSE, date_var='Time_start'){
+get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=FALSE, date_var='Time_start', narep=-100){
   data$date = as.numeric(format(as.Date(data[,date_var]), "%j"))
+
   sun = data$sun
   night = data[data$sun == 'Night',]
   day = data[data$sun == 'Day',]
+
 
   if (fun=='median'){
     pnight=lapply(as.list(unique(data$date)),
@@ -28,8 +30,7 @@ get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=
                   filter(date %in% (x-days_before):(x+days_after))%>%
                   group_by(Depth_r)%>%
                   summarise(Svmean_day = 10 * log10(median(10^(na.omit(Sv)/10))),
-                            date=x))%>%
-      bind_rows()
+                            date=x))%>%bind_rows()
 
   }else if(fun=='mean'){
     pnight=lapply(as.list(unique(data$date)),
@@ -52,6 +53,8 @@ get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=
   }
 
   p = left_join(pnight, pday)
+  p$Svmean_night[is.na(p$Svmean_night)] = narep
+  p$Svmean_day[is.na(p$Svmean_day)] = narep
   #data = data%>%group_by(Dive,Depth_r, sun)%>%summarise(Sv=10*log10(mean(10^(Sv/10))),
   #                                                      Date = mean(date))
 
@@ -64,5 +67,7 @@ get_daydiff = function(data, fun='median', days_before=1, days_after=1, replace=
   data$diff = 10 * log10((10^(data$Sv / 10) - 10^(data$Svmean / 10)))# - min(na.omit(10^(p2$Sv/10) - 10^(p2$Svmean/10))))
   if(replace==TRUE){data$Sv=data$diff}
   data$variable = 'Difference'
+  data$Sv[data$Sv==narep] = NA
   return(data)
 }
+

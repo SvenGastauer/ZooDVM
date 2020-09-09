@@ -9,7 +9,9 @@ get_daydiff(
   fun = "median",
   days_before = 1,
   days_after = 1,
-  replace = FALSE
+  replace = FALSE,
+  date_var = "Time_start",
+  narep = -100
 )
 }
 \arguments{
