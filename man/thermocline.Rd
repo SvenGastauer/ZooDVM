@@ -36,7 +36,14 @@ thermocline(
 \item{dmin}{defines a minimum depth to be considered, shallower depths will be ignored, defaults NULL, no minimum depth}
 }
 \description{
-
+Computes slopes (m_x) between each input value pair as
+{ m_x = \frac{temp_{x+1} - temp_x}{depth_{x+1} - depth_x}}{%
+m_x = (temp_[x+1] - temp_x) / (depth_[x+1] - depth_x)}
+The maximum slope (max([m_1,...m_n])) is assumed to represent a thermocline. r
+Slopes in positive or negative direction or in a single direction can be considered.
+A threshold range around the maximum slope can be defined.
+Rolling median values can be used to minimze the influence from few outliers.
+Maximum or minimum values as well as depths to be considered can be defined
 }
 \author{
 Sven Gastauer
