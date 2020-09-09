@@ -1,6 +1,6 @@
 #' Get thermocline or another *cline
 #' @description Computes slopes (m_x) between each input value pair as
-#' \deqn{ m_x = \frac{temp_{x+1} - temp_x}{depth_{x+1} - depth_x}}{%
+#' { m_x = \frac{temp_{x+1} - temp_x}{depth_{x+1} - depth_x}}{%
 #' m_x = (temp_[x+1] - temp_x) / (depth_[x+1] - depth_x)}
 #' The maximum slope (max([m_1,...m_n])) is assumed to represent a thermocline. \cr
 #' Slopes in positive or negative direction or in a single direction can be considered.\cr
