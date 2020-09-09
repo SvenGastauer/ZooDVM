@@ -25,7 +25,7 @@ thermocline(
 
 \item{tmin}{set a minimum value to be considered, all values below this threshold will be set to tmin, NULL for no minimum, defaults NULL}
 
-\item{pac}{proportion to be considered a thermocline around the maximum slope detected, defaults 5% = 0.05}
+\item{pac}{proportion to be considered a thermocline around the maximum slope detected, defaults 5 = 0.05}
 
 \item{r}{defines the window size of rolling median to be computed, this is handy if there are a few single outliers, in the dataset, defaults to 1 which is a rolling median with a window size of 1, which equals all raw values}
 
