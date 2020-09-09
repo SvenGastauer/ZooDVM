@@ -4,7 +4,7 @@
 #' @param depths array of depths, must be the same length as temps
 #' @param tmax set a maximum value to be considered, all values above this threshold will be set to tmax, NULL for no maximum, defaults NULL
 #' @param tmin set a minimum value to be considered, all values below this threshold will be set to tmin, NULL for no minimum, defaults NULL
-#' @param pac proportion to be considered a thermocline around the maximum slope detected, defaults 5% = 0.05
+#' @param pac proportion to be considered a thermocline around the maximum slope detected, defaults 5 percent = 0.05
 #' @param r defines the window size of rolling median to be computed, this is handy if there are a few single outliers, in the dataset, defaults to 1 which is a rolling median with a window size of 1, which equals all raw values
 #' @param cw defines if positive, negative or both slopes should be considered, cw = both directions, c=from warm to cold (large to low value), w = from cold to warm only (low to large value), defaults c
 #' @param dmax defines a maximum depth to be considered, greater depths will be ignored, defaults NULL, no maximum depth
