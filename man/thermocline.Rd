@@ -16,27 +16,8 @@ thermocline(
   dmin = NULL
 )
 }
-\arguments{
-\item{temps}{array of temperatures, must be the same length ans depths}
-
-\item{depths}{array of depths, must be the same length as temps}
-
-\item{tmax}{set a maximum value to be considered, all values above this threshold will be set to tmax, NULL for no maximum, defaults NULL}
-
-\item{tmin}{set a minimum value to be considered, all values below this threshold will be set to tmin, NULL for no minimum, defaults NULL}
-
-\item{pac}{proportion to be considered a thermocline around the maximum slope detected, defaults 5 = 0.05}
-
-\item{r}{defines the window size of rolling median to be computed, this is handy if there are a few single outliers, in the dataset, defaults to 1 which is a rolling median with a window size of 1, which equals all raw values}
-
-\item{cw}{defines if positive, negative or both slopes should be considered, cw = both directions, c=from warm to cold (large to low value), w = from cold to warm only (low to large value), defaults c}
-
-\item{dmax}{defines a maximum depth to be considered, greater depths will be ignored, defaults NULL, no maximum depth}
-
-\item{dmin}{defines a minimum depth to be considered, shallower depths will be ignored, defaults NULL, no minimum depth}
-}
 \description{
-
+Get thermocline or another *cline
 }
 \author{
 Sven Gastauer
