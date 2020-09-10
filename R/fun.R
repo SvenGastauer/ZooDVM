@@ -44,14 +44,14 @@ get_mission <- function(path, patterns = c('200kHz', '1000kHz','Delta'), ending=
 #' @param deltamin minimum value for delta Sv, defaults to -10
 #' @param deltamax maximum value for delta Sv, defaults to +10
 #' @param nam character for legend title
-#' @param cdir Color sclae direction, 1 for up, -1 for down, default=1
+#' @param cdir Color sclae direction, 1 for up, -1 for down, default=-1
 #' @export
 #' @import ggplot2
 #' @author Sven Gastauer
 #' @return list of plots
 plot_sv <- function(d1, gps=NULL,
                     cols=c("Night" = "black", "Dusk/Dawn" = "gray", "Day" = "yellow"),
-                    cmaps=c("RdYlBu",'RdBu'),cdir=1,
+                    cmaps=c("RdYlBu",'RdBu'),cdir=-1,
                     svmin=-85,svmax=-45,deltamin=-10,deltamax=10, variable=NULL, nam=NULL){
   if (is.null(variable)){variable = unique(d1$variable)}else{vari=variable}
   if(variable %in% c('1000kHz','200kHz','Sv','TS')){
@@ -89,7 +89,8 @@ plot_sv <- function(d1, gps=NULL,
     scale_y_reverse()+
     scale_fill_distiller(palette = cmap, na.value = 'transparent',
                          limits=lims,
-                         name=nam, oob=scales::squish)+
+                         name=nam, oob=scales::squish,
+                         direction=cdir)+
     scale_x_continuous(expand=c(0.01,0.01))+
     xlab('Dive #') + ylab('Depth [m]')+
     theme_classic()+

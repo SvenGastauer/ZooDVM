@@ -1,7 +1,7 @@
 Package: ZooDVM
 Type: Package
 Title: Zooglider - Zonar DVM analysis
-Version: 0.1.0
+Version: 0.1.1
 Author: Sven Gastauer
 Maintainer: The package maintainer <sgastauer@ucsd.edu>
 Description: This package can be used to analyze active acoustic data, recevied through the Zooglider Zonar, an pre-processesed through Python libraries, generating Sv csv files for eahc of the two frequencies, as well as Sv Delta files. Files are structured, such that each row represents a depth step and each column a Dive. \nIn its current form, this package simplifies reading in the data, and restructuring it for plotting with ggplot and contains some simple functions to detect and analyze DVM.  \nMore to come...
