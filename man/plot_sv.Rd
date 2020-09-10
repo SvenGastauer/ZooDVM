@@ -9,6 +9,7 @@ plot_sv(
   gps = NULL,
   cols = c(Night = "black", `Dusk/Dawn` = "gray", Day = "yellow"),
   cmaps = c("RdYlBu", "RdBu"),
+  cdir = 1,
   svmin = -85,
   svmax = -45,
   deltamin = -10,
@@ -23,6 +24,8 @@ plot_sv(
 \item{gps}{dataframe containing lat, lon, and time information}
 
 \item{cmaps}{colour maps for Sv data and Sv delta if needed, defaults to c("RdYlBu",'RdBu')}
+
+\item{cdir}{Color sclae direction, 1 for up, -1 for down, default=1}
 
 \item{svmin}{minimum value for Sv color, defaults to -85}
 
